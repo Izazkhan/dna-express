@@ -1,0 +1,11 @@
+// .sequelizerc  ← NO import/export
+require("babel-register");
+const path = require('path');
+require('dotenv').config();
+
+module.exports = {
+    'config': path.resolve('cli-config', 'config.js'),
+    'models-path': path.resolve('src/app/models'),
+    'seeders-path': path.resolve('src/app/database/seeders'),
+    'migrations-path': path.resolve('src/app/database/migrations')
+};

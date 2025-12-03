@@ -1,0 +1,63 @@
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../../config/database.js';
+
+const IgbAccount = sequelize.define('IgbAccount', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+    fb_page_id: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+    },
+    instagram_account_id: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+    },
+    name: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+    },
+    username: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+    },
+    profile_picture_url: {
+        type: DataTypes.STRING(1024),
+        allowNull: true,
+    },
+    website: {
+        type: DataTypes.STRING(1024),
+        allowNull: true,
+        defaultValue: null,
+    },
+    is_profile: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
+    is_tag_generator: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
+    is_featured: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: false,
+    },
+    featured_date: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    }
+}, {
+    tableName: 'igb_accounts',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+});
+
+export default IgbAccount;

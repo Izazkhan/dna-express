@@ -1,0 +1,19 @@
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../../config/database.js';
+
+const AdCampaignDemographic = sequelize.define('AdCampaignDemographic', {
+    ad_campaign_id: {
+        type: DataTypes.BIGINT.UNSIGNED
+    }, use_gender: {
+        type: DataTypes.BOOLEAN
+    }, percent_female: {
+        type: DataTypes.INTEGER
+    }, percent_male: {
+        type: DataTypes.INTEGER
+    }
+}, {
+    tableName: 'ad_campaign_demographics',
+    timestamps: false,
+});
+
+export default AdCampaignDemographic;
