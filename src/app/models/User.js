@@ -45,6 +45,10 @@ const User = sequelize.define('User', {
     refresh_token: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    role: {
+        type: DataTypes.ENUM('advertiser', 'influencer', 'admin'),
+        allowNull: false
     }
 }, {
     timestamps: true,

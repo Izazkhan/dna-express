@@ -1,11 +1,8 @@
 import express from 'express';
-import { protect } from '../../app/middlewares/auth-middleware.js';
-import AdCampaignsController from '../../app/controllers/web/ad-campaign-controller.js';
-import { validateCreateCampaign, validateUpdateCampaign } from '../../app/validators/campaign-validator.js';
+import AdCampaignsController from '../../app/controllers/web/ad-campaigns-controller.js';
+import { validateCreateCampaign, validateUpdateCampaign } from '../../app/validators/web/campaign-validator.js';
 import { validate } from '../../app/middlewares/validation-middleware.js';
 const router = express.Router();
-
-router.use(protect);
 
 router.post('/', validate(validateCreateCampaign), AdCampaignsController.create);
 router.put('/:id', validate(validateUpdateCampaign), AdCampaignsController.update);

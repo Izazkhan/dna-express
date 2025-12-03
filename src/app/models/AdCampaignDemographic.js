@@ -3,7 +3,7 @@ import { sequelize } from '../../config/database.js';
 
 const AdCampaignDemographic = sequelize.define('AdCampaignDemographic', {
     ad_campaign_id: {
-        type: DataTypes.BIGINT.UNSIGNED
+        type: DataTypes.BIGINT
     }, use_gender: {
         type: DataTypes.BOOLEAN
     }, percent_female: {

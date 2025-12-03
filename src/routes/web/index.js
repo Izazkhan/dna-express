@@ -6,10 +6,13 @@ import adCampaignRoutes from './ad-campaign-routes.js';
 import locationsRoutes from './locations-routes.js';
 import paymentRoutes from './payment-routes.js';
 import transactionsRoutes from './transactions-routes.js';
+import { protect } from '../../app/middlewares/auth-middleware.js';
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
+
+router.use(protect); // below this line the routes are protected
 router.use('/users', userRoutes);
 router.use('/adcampaigns', adCampaignRoutes);
 router.use('/locations', locationsRoutes);

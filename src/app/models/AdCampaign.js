@@ -4,13 +4,13 @@ import { sequelize } from '../../config/database.js';
 
 const AdCampaign = sequelize.define('AdCampaign', {
     id: {
-        type: DataTypes.BIGINT.UNSIGNED,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
     },
     user_id: {
-        type: DataTypes.BIGINT.UNSIGNED,
+        type: DataTypes.BIGINT,
         allowNull: true,
         comment: 'Foreign key to users table',
     },
@@ -128,13 +128,13 @@ const AdCampaign = sequelize.define('AdCampaign', {
         validate: { min: 0 },
     },
     story_impressions_min: {
-        type: DataTypes.INTEGER.UNSIGNED,
+        type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 0,
         validate: { min: 0 },
     },
     story_impressions_max: {
-        type: DataTypes.INTEGER.UNSIGNED,
+        type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 0,
         validate: { min: 0 },

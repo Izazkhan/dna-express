@@ -3,10 +3,11 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
-import routes from './routes/web/index.js';
+import webRoutes from './routes/web/index.js';
+import appRoutes from './routes/app-api/index.js';
 import { errorHandler, notFound } from './app/middlewares/error-middleware.js';
 import logger from './utils/logger.js';
-import PaymentController from './app/controllers/web/payment-controller.js';
+import PaymentController from './app/controllers/web/payments-controller.js';
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 // Security middleware
 app.use(helmet());
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORS_ORIGIN,
     credentials: true
 }));
 
@@ -38,7 +39,8 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/', routes);
+app.use('/api/app', appRoutes);
+app.use('/api/', webRoutes);
 
 // Error handling
 app.use(notFound);

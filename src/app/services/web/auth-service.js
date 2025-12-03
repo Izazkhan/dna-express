@@ -32,12 +32,12 @@ class AuthService {
     }
 
     // Register new user
-    async register({ email, password, name }) {
+    async register({ email, password, name, role }) {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) throw new ApiError(400, 'User already exists');
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hashedPassword, name });
+        const user = await User.create({ email, password: hashedPassword, name, role });
 
         const { accessToken, refreshToken } = this.#generateTokens(user.id);
         await user.update({ refresh_token: await this.#hashToken(refreshToken) });
@@ -45,7 +45,7 @@ class AuthService {
         await this.#sendWelcomeEmail(email, name);
 
         return {
-            user: { id: user.id, email: user.email, name: user.name },
+            user: user,
             accessToken,
             refreshToken,
         };
