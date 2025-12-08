@@ -1,21 +1,29 @@
 import { User } from "../../models/index.js";
+import TokenService from "./token-service.js";
 
 class UserService {
-    async create({ email, password, name, role }) {
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) throw new ApiError(400, 'User already exists');
+    constructor() {
+        this.tokenService = new TokenService;
+    }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hashedPassword, name, role });
-
-        await user.update();
-
-        // TODO: send welcome email to influencer
+    async create({ fb_user_id, access_token, email }) {
+        let user = await User.findOne({ where: { fb_user_id } });
+        let encryptedToken = this.tokenService.encrypt(access_token);
+        if (!user) {
+            user = await User.create({
+                fb_user_id,
+                email,
+                access_token: encryptedToken
+            });
+        } else {
+            user = await user.update({
+                email,
+                access_token: encryptedToken
+            });
+        }
 
         return {
-            user: user,
-            accessToken,
-            refreshToken,
+            user: user
         };
     }
 }

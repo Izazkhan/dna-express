@@ -8,6 +8,7 @@ import appRoutes from './routes/app-api/index.js';
 import { errorHandler, notFound } from './app/middlewares/error-middleware.js';
 import logger from './utils/logger.js';
 import PaymentController from './app/controllers/web/payments-controller.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.post('/api/payments/stripe/webhook', express.raw({ type: 'application/json' 
 
 // Body parsing middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Security middleware
@@ -35,7 +37,7 @@ app.use(
 
 // Health check
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', timestamp: new Date() });
+    return res.status(200).json({ status: 'OK', timestamp: new Date() });
 });
 
 // API routes

@@ -8,10 +8,10 @@ class TransactionsController {
     create = asyncHandler(async (req, res) => {
         try {
             const transaction = await this.service.create(req.body);
-            res.status(201).json(transaction);
+            return res.status(201).json(transaction);
         } catch (error) {
             console.error("Transaction error:", error);
-            res.status(500).json({ error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     })
 
@@ -22,11 +22,11 @@ class TransactionsController {
             if (transaction) {
                 res.json(transaction);
             } else {
-                res.status(404).json({ message: 'Transaction not found' });
+                return res.status(404).json({ message: 'Transaction not found' });
             }
         } catch (error) {
             console.error("Transaction error:", error);
-            res.status(500).json({ error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     })
 }

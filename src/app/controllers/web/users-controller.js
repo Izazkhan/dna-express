@@ -10,21 +10,21 @@ class UserAuthController {
     }
     // GET current authenticated user
     getMe = asyncHandler(async (req, res) => {
-        res.status(200).json(new ApiResponse('User retrieved', req.user));
+        return res.status(200).json(new ApiResponse('User retrieved', req.user));
     });
 
     // Update authenticated user
     updateMe = asyncHandler(async (req, res) => {
         const updates = req.body;
         const result = await this.service.updateUser(req.user.id, updates);
-        res.status(200).json(new ApiResponse('User updated', result));
+        return res.status(200).json(new ApiResponse('User updated', result));
     });
 
     // Delete authenticated user
     deleteMe = asyncHandler(async (req, res) => {
         await this.service.deleteUser(req.user.id);
         await AuthService.logout(req, res); // clear session/token
-        res.status(200).json(new ApiResponse('Account deleted'));
+        return res.status(200).json(new ApiResponse('Account deleted'));
     });
 
     getUserById = asyncHandler(async (req, res) => {
@@ -32,13 +32,13 @@ class UserAuthController {
         if (!user) {
             throw new ApiError(404, 'User not found');
         }
-        res.status(200).json(new ApiResponse('User retrieved', user));
+        return res.status(200).json(new ApiResponse('User retrieved', user));
     });
 
     // Delete user by ID
     deleteUser = asyncHandler(async (req, res) => {
         await this.service.deleteUser(req.params.id);
-        res.status(200).json(new ApiResponse('User deleted'));
+        return res.status(200).json(new ApiResponse('User deleted'));
     });
 }
 

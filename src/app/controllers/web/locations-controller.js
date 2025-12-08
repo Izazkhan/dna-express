@@ -11,7 +11,7 @@ export class LocationController {
             res.json(result);
         } catch (error) {
             console.error('Location search error:', error);
-            res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ error: 'Internal server error' });
         }
     }
 }

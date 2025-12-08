@@ -21,7 +21,7 @@ class AuthController {
         res.cookie('refreshToken', result.refreshToken, this.cookieOptions);
         delete result.refreshToken;
 
-        res.status(201).json(new ApiResponse('User registered successfully', result));
+        return res.status(201).json(new ApiResponse('User registered successfully', result));
     });
 
     // LOGIN USER
@@ -31,36 +31,37 @@ class AuthController {
         res.cookie('refreshToken', result.refreshToken, this.cookieOptions);
         delete result.refreshToken;
 
-        res.status(200).json(new ApiResponse('Login successful', result));
+        return res.status(200).json(new ApiResponse('Login successful', result));
     });
 
     // LOGOUT USER
     logout = asyncHandler(async (req, res) => {
         res.clearCookie('refreshToken', this.cookieOptions);
-        res.status(200).json(new ApiResponse('Logout successful'));
+        return res.status(200).json(new ApiResponse('Logout successful'));
     });
 
     // REFRESH ACCESS TOKEN
     refreshToken = asyncHandler(async (req, res) => {
+        console.log("HEre?", req.body, req.cookies.refreshToken);
         const result = await AuthService.refreshToken(req.cookies.refreshToken);
 
         res.cookie('refreshToken', result.refreshToken, this.cookieOptions);
         delete result.refreshToken;
 
-        res.status(200).json(new ApiResponse('Token refreshed', result));
+        return res.status(200).json(new ApiResponse('Token refreshed', result));
     });
 
     // RESET PASSWORD (with token)
     resetPassword = asyncHandler(async (req, res) => {
         await AuthService.resetPassword(req.body);
-        res.status(200).json(new ApiResponse('Password reset successful'));
+        return res.status(200).json(new ApiResponse('Password reset successful'));
     });
 
     // FORGOT PASSWORD (send email)
     forgotPassword = asyncHandler(async (req, res) => {
         const { email } = req.body;
         const result = await AuthService.forgotPassword(email);
-        res.status(200).json(new ApiResponse('Password reset email sent', result));
+        return res.status(200).json(new ApiResponse('Password reset email sent', result));
     });
 }
 

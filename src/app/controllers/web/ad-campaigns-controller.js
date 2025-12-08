@@ -16,21 +16,21 @@ class AdCampaignsController {
 
     create = asyncHandler(async (req, res) => {
         const campaign = await this.service.create(req);
-        res.status(200).json(new ApiResponse('message', campaign));
+        return res.status(200).json(new ApiResponse('message', campaign));
     });
 
     update = asyncHandler(async (req, res) => {
         const campaign = await this.service.update(req);
-        res.status(200).json(new ApiResponse('message', campaign));
+        return res.status(200).json(new ApiResponse('message', campaign));
     });
 
     getAll = asyncHandler(async (req, res) => {
         try {
             const campaigns = await this.service.getAllWithSimplePagination(req);
-            res.status(200).json(new ApiResponse('message', campaigns));
+            return res.status(200).json(new ApiResponse('message', campaigns));
         } catch (error) {
             console.error('Error fetching campaigns with pagination:', error);
-            res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
+            return res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
         }
     })
 
@@ -39,7 +39,7 @@ class AdCampaignsController {
         if (!campaign) {
             return res.status(404).json({ message: "Campaign not found" });
         }
-        res.status(200).json(new ApiResponse('message', campaign));
+        return res.status(200).json(new ApiResponse('message', campaign));
     })
     
     getForEditPage = asyncHandler(async (req, res) => {
@@ -47,7 +47,7 @@ class AdCampaignsController {
         if (!campaign) {
             return res.status(404).json({ message: "Campaign not found" });
         }
-        res.status(200).json(new ApiResponse('message', campaign));
+        return res.status(200).json(new ApiResponse('message', campaign));
     })
 
     getEngagementRanges = asyncHandler(async (req, res) => {

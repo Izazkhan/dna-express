@@ -22,6 +22,7 @@ DataCity.belongsTo(DataState, { foreignKey: 'data_state_id', as: 'state' });
 DataState.belongsTo(DataCountry, { foreignKey: 'data_country_id', as: 'country' });
 
 User.hasMany(IgbAccount, { foreignKey: 'user_id', as: 'igb_accounts' });
+IgbAccount.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 User.hasMany(AdCampaign, { foreignKey: 'user_id', as: 'campaigns' });
 AdCampaign.belongsTo(User, { foreignKey: 'user_id', as: 'user' });

@@ -30,7 +30,7 @@ class PaymentController {
 
         } catch (error) {
             console.error("Stripe error:", error);
-            res.status(500).json({ error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     })
 
@@ -57,7 +57,7 @@ class PaymentController {
             }
         } catch (error) {
             console.error("Stripe error:", error);
-            res.status(500).json({ error: error.message });
+            return res.status(500).json({ error: error.message });
         }
     })
 
@@ -88,10 +88,10 @@ class PaymentController {
                 "payment_id": pid
             });
             if (this.adCampaignService.publishCampaign(campaignId)) {
-                res.status(200).json({ event_received: true, publsihed: true });
+                return res.status(200).json({ event_received: true, publsihed: true });
             }
         }
-        res.status(200).json({ event_received: true, publsihed: false });
+        return res.status(200).json({ event_received: true, publsihed: false });
     })
 }
 

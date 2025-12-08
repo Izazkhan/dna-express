@@ -1,6 +1,5 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import PasswordReset from './PasswordReset.js';
 
 const User = sequelize.define('User', {
     id: {
@@ -10,45 +9,33 @@ const User = sequelize.define('User', {
     },
     name: {
         type: DataTypes.STRING(100),
-        allowNull: false,
-        validate: {
-            notEmpty: { msg: 'Name is required' },
-            len: {
-                args: [2, 100],
-                msg: 'Name must be between 2 and 100 characters',
-            },
-        },
+        allowNull: true
+    },
+    username: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    fb_user_id: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        unique: true
     },
     email: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        unique: {
-            name: 'idx_users_email',
-            msg: 'Email already exists',
-        },
-        validate: {
-            notEmpty: { msg: 'Email is required' },
-            isEmail: { msg: 'Must be a valid email address' },
-        },
+        allowNull: true,
+        unique: true,
     },
     password: {
         type: DataTypes.STRING(255),
-        allowNull: false,
-        validate: {
-            notEmpty: { msg: 'Password is required' },
-            len: {
-                args: [6],
-                msg: 'Password must be at least 6 characters',
-            },
-        },
+        allowNull: true
     },
     refresh_token: {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    role: {
-        type: DataTypes.ENUM('advertiser', 'influencer', 'admin'),
-        allowNull: false
+    access_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     timestamps: true,
@@ -56,15 +43,29 @@ const User = sequelize.define('User', {
     indexes: [
         {
             unique: true,
-            fields: ['email'],
+            fields: ['email', 'fb_user_id'],
         },
-    ]
+    ],
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    defaultScope: {
+        attributes: { exclude: ['access_token', 'refresh_token', 'password'] }
+    },
+    scopes: {
+        withTokens: {
+            attributes: { include: ['refresh_token', 'access_token'] }
+        },
+        withPassword: {
+            attributes: { include: ['password'] }
+        },
+    }
 });
 
 User.prototype.toJSON = function () {
     const values = { ...this.get() };
     delete values.password;
     delete values.refresh_token;
+    delete values.access_token;
     return values;
 };
 

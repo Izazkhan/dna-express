@@ -8,8 +8,8 @@ class UsersController {
     }
 
     create = asyncHandler(async (req, res) => {
-        let response = await this.service.create(req);
-        res.status(200).json(new ApiResponse('message', response));
+        let response = await this.service.create(req.body);
+        res.status(200).json(new ApiResponse('User has been successfully registered', response));
     });
 }
 

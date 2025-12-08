@@ -88,11 +88,7 @@ class AdCampaignService {
                 {
                     model: AdCampaignLocation, as: 'locations',
                     include: ['city', 'state', 'country']
-                }, {
-                    model: User,
-                    as: 'user',
-                    attributes: { exclude: ['password', 'refresh_token'] }
-                }],
+                }, 'user'],
                 transaction: t
             });
             return this.transformCampaignResponseData(updatedCampaign);

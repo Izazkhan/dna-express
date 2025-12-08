@@ -1,50 +1,53 @@
-import { ApiError } from '../../utils/api-response.js';
 import asyncHandler from '../../utils/async-handler.js';
-import { User } from '../models/index.js';
+import IgbAccount from '../models/IgbAccount.js';
+import User from '../models/User.js';
+import TokenService from '../services/app-api/token-service.js';
 
-export const appProtect = asyncHandler(async (req, res, next) => {
-    let encodedToken;
-    if (req.headers.authorization?.startsWith('Bearer')) {
-        encodedToken = req.headers.authorization.split(' ')[1];
+class AppAuthMiddleware {
+    constructor() {
+        this.tokenService = new TokenService(); // Instance state if needed
     }
 
-    if (!encodedToken) {
-        throw new ApiError(401, 'App access token required');
-    }
-
-    try {
-        // Step 1: Base64 decode the token (fb_user_id:access_token)
-        const decodedString = Buffer.from(encodedToken, 'base64').toString('utf-8');
-        const [fbUserId, accessToken] = decodedString.split(':');
-
-        if (!fbUserId || !accessToken) {
-            throw new ApiError(401, 'Invalid token format');
+    handle = asyncHandler(async (req, res, next) => {
+        let encodedBearer;
+        if (req.headers.authorization?.startsWith('Bearer')) {
+            encodedBearer = req.headers.authorization.split(' ')[1];
         }
 
-        // Step 2: Find user by fb_user_id
+        if (!encodedBearer) {
+            throw new ApiError(401, 'Bearer token required');
+        }
+
+        const { fbUserId, plainAccessToken } = this.#decodeBearer(encodedBearer); // Private method
+
         const user = await User.findOne({ where: { fb_user_id: fbUserId } });
-        if (!user) {
-            throw new ApiError(401, 'User not found');
+        if (!user) throw new ApiError(401, 'User not found');
+
+        let decryptedStored;
+        try {
+            // Fetch encrypted from linked table if needed
+            const igbAccount = await IgbAccount.findOne({ where: { user_id: user.id } });
+            if (!igbAccount) throw new Error('No IGB account');
+            decryptedStored = this.tokenService.decrypt(igbAccount.access_token);
+        } catch (error) {
+            throw new ApiError(401, 'Stored token invalid');
         }
 
-        // Step 3: Verify stored access_token matches (for tamper-proofing; skip if not needed)
-        if (user.access_token !== accessToken) {
+        if (decryptedStored !== plainAccessToken) {
             throw new ApiError(401, 'Token mismatch');
         }
 
-        // Step 4: Set req.user with essentials
-        req.user = {
-            id: user.id,
-            fb_user_id: user.fb_user_id,
-            username: user.username,
-            // Add more fields as needed (e.g., role if applicable)
-        };
-
+        req.user = { id: user.id, fb_user_id: fbUserId, access_token: plainAccessToken };
         next();
-    } catch (error) {
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(401, 'Authentication failed');
+    });
+
+    // Private helper (class benefit: encapsulation)
+    #decodeBearer(encoded) {
+        const bundleString = Buffer.from(encoded, 'base64').toString('utf8');
+        const [fbUserId, plainAccessToken] = bundleString.split(':');
+        if (!fbUserId || !plainAccessToken) throw new Error('Invalid format');
+        return { fbUserId, plainAccessToken };
     }
-});
+}
+
+export default new AppAuthMiddleware;

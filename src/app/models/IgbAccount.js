@@ -12,7 +12,7 @@ const IgbAccount = sequelize.define('IgbAccount', {
         allowNull: true,
     },
     instagram_account_id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.STRING(255),
         allowNull: true,
     },
     name: {

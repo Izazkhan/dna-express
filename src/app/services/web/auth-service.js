@@ -32,12 +32,12 @@ class AuthService {
     }
 
     // Register new user
-    async register({ email, password, name, role }) {
+    async register({ email, password, name }) {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) throw new ApiError(400, 'User already exists');
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hashedPassword, name, role });
+        const user = await User.create({ email, password: hashedPassword, name });
 
         const { accessToken, refreshToken } = this.#generateTokens(user.id);
         await user.update({ refresh_token: await this.#hashToken(refreshToken) });
@@ -140,11 +140,14 @@ class AuthService {
         }
 
         const user = await User.findOne({
-            where: { id: decoded.id },
-            attributes: ['id', 'refresh_token', 'is_active'],
+            // fb_user_id null means only advertisers
+            where: { id: decoded.id, fb_user_id: null },
+            attributes: ['id', 'refresh_token'],
         });
 
-        if (!user || !user.is_active) throw new ApiError(401, 'Invalid token');
+        if (!user || !user?.refresh_token) {
+            throw new ApiError(401, 'User not found');
+        }
 
         const isTokenValid = await bcrypt.compare(refreshToken, user.refresh_token);
         if (!isTokenValid) throw new ApiError(401, 'Invalid token');

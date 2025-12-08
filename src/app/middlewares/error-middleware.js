@@ -35,7 +35,7 @@ export const errorHandler = (err, req, res, next) => {
         message = 'Token expired';
     }
 
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
         success: false,
         message,
         ...(err.errors && { errors: err.errors }),
@@ -45,6 +45,6 @@ export const errorHandler = (err, req, res, next) => {
 
 export const notFound = (req, res, next) => {
     const error = new Error(`Not Found - ${req.originalUrl}`);
-    res.status(404);
+    return res.status(404);
     next(error);
 };
