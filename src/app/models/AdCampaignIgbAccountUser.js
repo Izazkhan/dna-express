@@ -35,10 +35,10 @@ const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
-    platform_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
+    // platform_id: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: true,
+    // },
     post_id: {
         type: DataTypes.BIGINT,
         allowNull: true,

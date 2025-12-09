@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 
 const User = sequelize.define('User', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
@@ -40,12 +40,6 @@ const User = sequelize.define('User', {
 }, {
     timestamps: true,
     underscored: true,
-    indexes: [
-        {
-            unique: true,
-            fields: ['email', 'fb_user_id'],
-        },
-    ],
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     defaultScope: {
@@ -58,6 +52,16 @@ const User = sequelize.define('User', {
         withPassword: {
             attributes: { include: ['password'] }
         },
+        advertiser: {
+            where: {
+                fb_user_id: null
+            }
+        },
+        influencer: {
+            where: {
+                fb_user_id: { [Op.ne]: null }
+            }
+        }
     }
 });
 

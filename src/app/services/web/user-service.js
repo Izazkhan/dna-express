@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 class UserService {
     // [Api] Get user by ID
     async getUserById(id) {
-        const user = await User.findByPk(id);
+        const user = await User.scope('advertiser').findByPk(id);
         if (!user) {
             throw new ApiError(404, 'User not found');
         }

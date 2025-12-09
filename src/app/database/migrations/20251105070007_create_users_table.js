@@ -4,7 +4,7 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.sequelize.query(`
         CREATE TABLE IF NOT EXISTS users (
-            id              INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+            id              BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
             name            VARCHAR(50) NULL,
             username        VARCHAR(50) NULL,
             email           VARCHAR(255) NULL,
@@ -19,9 +19,6 @@ module.exports = {
 
             UNIQUE(email, fb_user_id)
         );
-
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_users_fb_user_id_unique ON users (fb_user_id);
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users (email);
     `);
     },
 

@@ -1,3 +1,4 @@
+import { ApiError } from '../../utils/api-response.js';
 import asyncHandler from '../../utils/async-handler.js';
 import IgbAccount from '../models/IgbAccount.js';
 import User from '../models/User.js';
@@ -20,24 +21,21 @@ class AppAuthMiddleware {
 
         const { fbUserId, plainAccessToken } = this.#decodeBearer(encodedBearer); // Private method
 
-        const user = await User.findOne({ where: { fb_user_id: fbUserId } });
+        const user = await User.scope('withTokens').findOne({ where: { fb_user_id: fbUserId } });
         if (!user) throw new ApiError(401, 'User not found');
 
         let decryptedStored;
         try {
-            // Fetch encrypted from linked table if needed
-            const igbAccount = await IgbAccount.findOne({ where: { user_id: user.id } });
-            if (!igbAccount) throw new Error('No IGB account');
-            decryptedStored = this.tokenService.decrypt(igbAccount.access_token);
+            decryptedStored = this.tokenService.decrypt(user.access_token);
         } catch (error) {
             throw new ApiError(401, 'Stored token invalid');
         }
 
-        if (decryptedStored !== plainAccessToken) {
+        if (decryptedStored != plainAccessToken) {
+            console.log('decrypted', decryptedStored, plainAccessToken);
+
             throw new ApiError(401, 'Token mismatch');
         }
-
-        req.user = { id: user.id, fb_user_id: fbUserId, access_token: plainAccessToken };
         next();
     });
 

@@ -36,11 +36,9 @@ module.exports = {
             );
 
             -- Indexes for performance
-            CREATE INDEX IF NOT EXISTS idx_ad_campaigns_user_id ON ad_campaigns(user_id);
             CREATE INDEX IF NOT EXISTS idx_ad_campaigns_published ON ad_campaigns(published);
             CREATE INDEX IF NOT EXISTS idx_ad_campaigns_platform ON ad_campaigns(platform);
             CREATE INDEX IF NOT EXISTS idx_ad_campaigns_publish_from ON ad_campaigns(publish_from);
-            -- CREATE INDEX IF NOT EXISTS idx_ad_campaigns_type_id ON ad_campaigns(ad_campaign_type_id);
         `);
     },
 

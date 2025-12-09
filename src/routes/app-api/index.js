@@ -1,15 +1,18 @@
-// const express = require('express');
 import express from 'express';
-import userRoutes from './user-routes.js';
+import { publicRouter as userPublicRoutes, privateRouter as userPrivateRoutes } from './user-routes.js';
 import AppAuthMiddleware from '../../app/middlewares/app-auth-middleware.js';
 
 const router = express.Router();
 
-// unprotected routes
-router.use('/users', userRoutes);
+// UNPROTECTED USER ROUTES
+router.use('/users', userPublicRoutes);
 
+// ENABLE AUTH
 router.use(AppAuthMiddleware.handle);
-// below all routes are protected
-// router.use('/feed', feedRoutes);
+
+// PROTECTED USER ROUTES
+router.use('/users', userPrivateRoutes);
+
+// other protected routing groups go here…
 
 export default router;

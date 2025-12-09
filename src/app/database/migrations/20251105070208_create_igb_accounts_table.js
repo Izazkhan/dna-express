@@ -18,10 +18,10 @@ module.exports = {
             is_featured          BOOLEAN NULL DEFAULT FALSE,
             featured_date        TIMESTAMPTZ NULL,
             created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
+            updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+            UNIQUE (username, instagram_account_id)
+        );
     `);
     },
 

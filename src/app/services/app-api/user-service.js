@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { User } from "../../models/index.js";
 import TokenService from "./token-service.js";
 
@@ -25,6 +26,14 @@ class UserService {
         return {
             user: user
         };
+    }
+
+    async getById(fb_user_id) {
+        return await User.scope('influencer').findOne({
+            where: {
+                fb_user_id: fb_user_id
+            }
+        })
     }
 }
 

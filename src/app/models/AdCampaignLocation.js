@@ -2,8 +2,13 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 
 const AdCampaignLocation = sequelize.define('AdCampaignLocation', {
+    id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true
+    },
     ad_campaign_id: {
-        type: DataTypes.BIGINT
+        type: DataTypes.BIGINT.UNSIGNED
     },
     data_country_id: {
         type: DataTypes.INTEGER

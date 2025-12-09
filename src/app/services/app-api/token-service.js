@@ -43,6 +43,7 @@ export default class TokenService {
      * Returns plain token or throws on error (invalid format/tampered).
      */
     decrypt(encryptedToken) {
+        console.log('Func call: decrypt', encryptedToken);
         if (!encryptedToken) return null;
 
         const [ivHex, encryptedHex] = encryptedToken.split(':');
@@ -60,6 +61,7 @@ export default class TokenService {
         let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
 
+        console.log('Func call: decrypt 1', decrypted);
         return decrypted;
     }
 

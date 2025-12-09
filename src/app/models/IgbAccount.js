@@ -58,6 +58,11 @@ const IgbAccount = sequelize.define('IgbAccount', {
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    scopes: {
+        withUser: {
+            include: 'user'
+        }
+    }
 });
 
 export default IgbAccount;
