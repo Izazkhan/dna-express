@@ -7,7 +7,7 @@ module.exports = {
                 igb_account_id  BIGINT REFERENCES igb_accounts (id),
                 followers_count INTEGER,
                 engagement      DECIMAL(10,4),
-                impressions     BIGINT,
+                views           BIGINT,
                 likes           BIGINT,
                 comments        INTEGER,
                 saves           BIGINT,

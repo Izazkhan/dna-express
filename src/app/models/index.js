@@ -11,6 +11,11 @@ import DataState from './DataState.js';
 import IgbAccount from './IgbAccount.js';
 import PasswordReset from './PasswordReset.js';
 import User from './User.js';
+import IgPost from './IgPost.js';
+import IgPostInsightMetric from './IgPostInsightMetric.js';
+import IgStory from './IgStory.js';
+import IgStoryInsightMetric from './IgStoryInsightMetric.js';
+import IgProfileAverageInsights from './IgProfileAverageInsights.js';
 
 PasswordReset.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasOne(PasswordReset, { foreignKey: 'user_id', as: 'passwordReset' });
@@ -71,5 +76,10 @@ export {
     DataState,
     DataCity,
     AdCampaign,
-    AdCampaignDemographic
+    AdCampaignDemographic,
+    IgPost,
+    IgPostInsightMetric,
+    IgStory,
+    IgStoryInsightMetric,
+    IgProfileAverageInsights,
 }

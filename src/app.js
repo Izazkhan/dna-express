@@ -42,7 +42,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/app', appRoutes);
-app.use('/api/', webRoutes);
+app.use('/api/web', webRoutes);
 
 // Error handling
 app.use(notFound);

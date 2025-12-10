@@ -6,12 +6,12 @@ module.exports = {
                 id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 ig_post_id  BIGINT REFERENCES ig_posts (id),
                 engagement  DECIMAL(20,4),
-                impressions BIGINT,
+                views       BIGINT,
                 reach       BIGINT,
                 saved       INTEGER,
-                video_views BIGINT,
                 shares      INTEGER,
-                plays       BIGINT
+                likes       BIGINT,
+                comments    BIGINT
             )
         `);
     },

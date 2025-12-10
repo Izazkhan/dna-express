@@ -1,3 +1,4 @@
+import { ApiError } from '../../utils/api-response.js';
 import logger from '../../utils/logger.js';
 
 export const errorHandler = (err, req, res, next) => {
@@ -44,7 +45,7 @@ export const errorHandler = (err, req, res, next) => {
 };
 
 export const notFound = (req, res, next) => {
-    const error = new Error(`Not Found - ${req.originalUrl}`);
-    return res.status(404);
-    next(error);
+    res.status(404).json({
+        message: `Not Found - ${req.originalUrl}`
+    });
 };

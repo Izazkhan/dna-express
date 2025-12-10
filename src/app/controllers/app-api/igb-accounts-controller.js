@@ -9,7 +9,6 @@ class IgbAccountsController {
 
     create = asyncHandler(async (req, res) => {
         let response = await this.service.create(req.body, req.params.fb_user_id);
-        console.log('[response]',response)
         return res.status(200).json(new ApiResponse('User has been successfully registered', response));
     });
 }

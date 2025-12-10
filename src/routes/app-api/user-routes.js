@@ -17,6 +17,6 @@ publicRouter.post('/:fb_user_id/igb-account',
     IgbAccountsController.create
 );
 
-privateRouter.get('/:fb_user_id', UsersController.getById);
+privateRouter.get('/:igb_account_id', UsersController.getByIgbAccountId);
 
 export { publicRouter, privateRouter };

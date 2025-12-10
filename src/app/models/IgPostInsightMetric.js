@@ -15,7 +15,7 @@ const IgPostInsightMetric = sequelize.define('IgPostInsightMetric', {
         type: DataTypes.DECIMAL(10,4),
         allowNull: true,
     },
-    impressions: {
+    views: {
         type: DataTypes.BIGINT,
         allowNull: true
     },
@@ -27,10 +27,6 @@ const IgPostInsightMetric = sequelize.define('IgPostInsightMetric', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
-    video_views: {
-        type: DataTypes.BIGINT,
-        allowNull: true
-    },
     shares: {
         type: DataTypes.INTEGER,
         allowNull: true
@@ -39,7 +35,12 @@ const IgPostInsightMetric = sequelize.define('IgPostInsightMetric', {
         type: DataTypes.BIGINT,
         allowNull: true
     },
+    comments: {
+        type: DataTypes.BIGINT,
+        allowNull: true
+    }
 }, {
+    tableName: 'ig_post_insight_metrics',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at'

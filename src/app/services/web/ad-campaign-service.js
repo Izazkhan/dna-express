@@ -172,8 +172,6 @@ class AdCampaignService {
             ],
             attributes: {
                 exclude: [
-                    'impressions_cap',
-                    'impressions_cap_state',
                     'ad_campaign_payment_type_id',
                 ]
             }

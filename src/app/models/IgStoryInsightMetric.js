@@ -11,7 +11,7 @@ const InstagramStoryInsightMetric = sequelize.define('InstagramStoryInsightMetri
         type: DataTypes.BIGINT,
         allowNull: false,
     },
-    impressions: {
+    views: {
         type: DataTypes.BIGINT,
         allowNull: true
     },

@@ -52,6 +52,9 @@ const User = sequelize.define('User', {
         withPassword: {
             attributes: { include: ['password'] }
         },
+        // withIgbAccount: {
+        //     include: 'igb_account'
+        // },
         advertiser: {
             where: {
                 fb_user_id: null

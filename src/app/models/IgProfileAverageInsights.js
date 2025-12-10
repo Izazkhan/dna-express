@@ -19,7 +19,7 @@ const IgProfileAverageInsights = sequelize.define('IgProfileAverageInsights', {
         type: DataTypes.DECIMAL(10, 4),
         allowNull: true
     },
-    impressions: {
+    views: {
         type: DataTypes.BIGINT,
         allowNull: true
     },
@@ -39,7 +39,7 @@ const IgProfileAverageInsights = sequelize.define('IgProfileAverageInsights', {
         type: DataTypes.BIGINT,
         allowNull: true
     },
-    reach: {
+    reach: {    
         type: DataTypes.BIGINT,
         allowNull: true
     }

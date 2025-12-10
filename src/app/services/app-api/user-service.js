@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
 import { User } from "../../models/index.js";
 import TokenService from "./token-service.js";
+import IgbAccount from "../../models/IgbAccount.js";
+import { ApiError } from "../../../utils/api-response.js";
 
 class UserService {
     constructor() {
@@ -34,6 +36,21 @@ class UserService {
                 fb_user_id: fb_user_id
             }
         })
+    }
+
+    async getUserIgbAccount(req) {
+        let account = await IgbAccount.scope('withUser').findOne({
+            where: {
+                user_id: req.user.id,
+                instagram_account_id: req.params.igb_account_id
+            }
+        })
+
+        if (!account) {
+            throw new ApiError(404, 'Igb Account not found');
+        }
+
+        return account;
     }
 }
 

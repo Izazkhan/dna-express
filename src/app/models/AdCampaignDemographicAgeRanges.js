@@ -3,7 +3,7 @@ import { sequelize } from '../../config/database.js';
 
 const AdCampaignDemographicAgeRanges = sequelize.define('AdCampaignDemographicAgeRanges', {
     ad_campaign_demographic_id: {
-        type: DataTypes.BIGINT.UNSIGNED
+        type: DataTypes.BIGINT
     },
     age_range_id: {
         type: DataTypes.INTEGER

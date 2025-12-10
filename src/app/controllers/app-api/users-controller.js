@@ -11,10 +11,14 @@ class UsersController {
         let response = await this.service.create(req.body);
         res.status(200).json(new ApiResponse('User has been successfully registered', response));
     });
-
-    getById = asyncHandler(async (req, res) => {
-        let response = await this.service.getById(req.params.fb_user_id);
-        return res.status(200).json(new ApiResponse('User retreived', response));
+    
+    getAuthUser = asyncHandler(async (req, res) => {
+        return res.status(200).json(new ApiResponse("User retrieved", req.user));
+    });
+    
+    getByIgbAccountId = asyncHandler(async (req, res) => {
+        let response = await this.service.getUserIgbAccount(req);
+        return res.status(200).json(new ApiResponse("Account retrieved", response));
     });
 }
 

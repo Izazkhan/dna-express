@@ -21,7 +21,7 @@ class AppAuthMiddleware {
 
         const { fbUserId, plainAccessToken } = this.#decodeBearer(encodedBearer); // Private method
 
-        const user = await User.scope('withTokens').findOne({ where: { fb_user_id: fbUserId } });
+        const user = await User.scope(['withTokens']).findOne({ where: { fb_user_id: fbUserId } });
         if (!user) throw new ApiError(401, 'User not found');
 
         let decryptedStored;
@@ -36,6 +36,7 @@ class AppAuthMiddleware {
 
             throw new ApiError(401, 'Token mismatch');
         }
+        req.user = user;
         next();
     });
 

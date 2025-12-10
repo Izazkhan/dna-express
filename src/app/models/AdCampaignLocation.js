@@ -8,7 +8,7 @@ const AdCampaignLocation = sequelize.define('AdCampaignLocation', {
         autoIncrement: true
     },
     ad_campaign_id: {
-        type: DataTypes.BIGINT.UNSIGNED
+        type: DataTypes.BIGINT
     },
     data_country_id: {
         type: DataTypes.INTEGER

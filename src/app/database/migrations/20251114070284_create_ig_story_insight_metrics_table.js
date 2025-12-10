@@ -5,7 +5,7 @@ module.exports = {
             CREATE TABLE IF NOT EXISTS ig_story_insight_metrics (
                 id            BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 ig_story_id   BIGINT REFERENCES ig_stories (id),
-                impressions   BIGINT,
+                views         BIGINT,
                 reach         BIGINT,
                 taps_forward  INTEGER,
                 taps_back     INTEGER,

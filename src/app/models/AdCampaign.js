@@ -122,11 +122,11 @@ const AdCampaign = sequelize.define('AdCampaign', {
         type: DataTypes.BOOLEAN,
         allowNull: true,
     },
-    impressions_cap: {
-        type: DataTypes.BIGINT,
-        allowNull: true,
-        validate: { min: 0 },
-    },
+    // impressions_cap: {
+    //     type: DataTypes.BIGINT,
+    //     allowNull: true,
+    //     validate: { min: 0 },
+    // },
     story_impressions_min: {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -150,12 +150,12 @@ const AdCampaign = sequelize.define('AdCampaign', {
     content_link: {
         type: DataTypes.STRING,
         allowNull: true,
-    },
-    impressions_cap_state: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 0,
-        validate: { isInt: true },
+    // },
+    // impressions_cap_state: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: true,
+    //     defaultValue: 0,
+    //     validate: { isInt: true },
     }
 }, {
     tableName: 'ad_campaigns',

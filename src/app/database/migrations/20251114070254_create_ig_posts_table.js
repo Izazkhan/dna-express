@@ -15,7 +15,10 @@ module.exports = {
                 thumbnail_url       VARCHAR(1024),
                 caption             VARCHAR(2200),
                 video_title         VARCHAR(1024),
-                media_product_type  VARCHAR(16)
+                media_product_type  VARCHAR(16),
+
+                created_at          TIMESTAMPTZ DEFAULT NOW(),
+                updated_at          TIMESTAMPTZ DEFAULT NOW()
             )
         `);
     },
