@@ -44,6 +44,7 @@ const IgProfileAverageInsights = sequelize.define('IgProfileAverageInsights', {
         allowNull: true
     }
 }, {
+    tableName: '',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at'

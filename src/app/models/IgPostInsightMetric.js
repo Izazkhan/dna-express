@@ -31,10 +31,6 @@ const IgPostInsightMetric = sequelize.define('IgPostInsightMetric', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
-    plays: {
-        type: DataTypes.BIGINT,
-        allowNull: true
-    },
     comments: {
         type: DataTypes.BIGINT,
         allowNull: true

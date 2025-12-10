@@ -18,10 +18,6 @@ module.exports = {
             // REALISTIC IG METRIC MODEL
             // -------------------------
 
-            const isVideo =
-                post.media_type === 'VIDEO' ||
-                (post.media_type === 'CAROUSEL_ALBUM' && Math.random() < 0.30);
-
             // IMPRESSIONS (views)
             const views = Math.floor(800 + Math.random() * 30000);
             // reach is usually 60–90% of impressions
@@ -55,9 +51,7 @@ module.exports = {
                 comments,
                 reach,
                 saved,
-                shares,
-                created_at: new Date(),
-                updated_at: new Date()
+                shares
             });
         }
 

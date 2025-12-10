@@ -36,6 +36,7 @@ const InstagramStoryInsightMetric = sequelize.define('InstagramStoryInsightMetri
         allowNull: true
     }
 }, {
+    tableName: 'ig_story_insight_metrics',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at'
