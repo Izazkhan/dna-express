@@ -12,7 +12,10 @@ module.exports = {
                 comments        INTEGER,
                 saves           BIGINT,
                 posts           BIGINT,
-                reach           BIGINT
+                reach           BIGINT,
+
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW()
             )
         `);
     },

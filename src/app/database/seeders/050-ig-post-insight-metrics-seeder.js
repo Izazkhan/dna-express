@@ -4,7 +4,7 @@
 module.exports = {
     async up(queryInterface, Sequelize) {
 
-        // Fetch all IgPost IDs + media_type so insight generation can be realistic
+        // Fetch posts (so insights match post media_type)
         const posts = await queryInterface.sequelize.query(
             `SELECT id, media_type FROM ig_posts ORDER BY id ASC;`,
             { type: queryInterface.sequelize.QueryTypes.SELECT }
@@ -13,22 +13,38 @@ module.exports = {
         const insights = [];
 
         for (const post of posts) {
+
+            // -------------------------
+            // REALISTIC IG METRIC MODEL
+            // -------------------------
+
             const isVideo =
                 post.media_type === 'VIDEO' ||
-                post.media_type === 'CAROUSEL_ALBUM' && Math.random() < 0.3; // 30% carousel videos
+                (post.media_type === 'CAROUSEL_ALBUM' && Math.random() < 0.30);
 
-            const views = Math.floor(500 + Math.random() * 10000);  // 500–10k
-            const likes = Math.floor(500 + Math.random() * 10000);  // 500–10k
-            const reach = Math.floor(views * (0.6 + Math.random() * 0.3));  // 60–90% of views
-            const saved = Math.floor(Math.random() * 200);  // 0–200 saves
-            const shares = Math.floor(Math.random() * 100); // 0–100 shares
-            const comments = Math.floor(Math.random() * 1000); // 0–100 shares
+            // IMPRESSIONS (views)
+            const views = Math.floor(800 + Math.random() * 30000);
+            // reach is usually 60–90% of impressions
+            const reach = Math.floor(views * (0.60 + Math.random() * 0.30));
 
+            // Likes strongly correlate with reach
+            const likes = Math.floor(reach * (0.01 + Math.random() * 0.06));
+            // (1% – 7% typical engagement)
 
-            // Engagement rate approximation: (likes + comments + saves + shares) / reach
+            // Comments correlate with likes
+            const comments = Math.floor(likes * (0.03 + Math.random() * 0.15));
+
+            // Saves correlate with content quality
+            const saved = Math.floor(reach * (0.002 + Math.random() * 0.01));
+
+            // Shares are usually low
+            const shares = Math.floor(reach * (0.001 + Math.random() * 0.005));
+
+            // Engagement Rate (industry standard):
+            // (likes + comments + saves + shares) / reach * 100
             const engagement =
                 reach > 0
-                    ? Number(((likes + saved + shares + comments) * 100 / reach).toFixed(4))
+                    ? Number(((likes + comments + saved + shares) * 100 / reach).toFixed(4))
                     : 0;
 
             insights.push({
@@ -39,7 +55,9 @@ module.exports = {
                 comments,
                 reach,
                 saved,
-                shares
+                shares,
+                created_at: new Date(),
+                updated_at: new Date()
             });
         }
 

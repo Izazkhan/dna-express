@@ -16,6 +16,7 @@ module.exports = {
             ig_post_id           BIGINT REFERENCES ig_posts (id),
             ig_story_id          BIGINT REFERENCES ig_stories (id),
             is_defaulted         BOOLEAN NULL DEFAULT FALSE,
+            
             created_at           TIMESTAMPTZ DEFAULT NOW(),
             updated_at           TIMESTAMPTZ DEFAULT NOW()
         );

@@ -11,7 +11,10 @@ module.exports = {
                 saved       INTEGER,
                 shares      INTEGER,
                 likes       BIGINT,
-                comments    BIGINT
+                comments    BIGINT,
+
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW()
             )
         `);
     },

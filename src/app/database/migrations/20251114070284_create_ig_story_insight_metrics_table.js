@@ -10,7 +10,10 @@ module.exports = {
                 taps_forward  INTEGER,
                 taps_back     INTEGER,
                 replies       INTEGER,
-                exits         INTEGER
+                exits         INTEGER,
+
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW()
             )
         `);
     },
