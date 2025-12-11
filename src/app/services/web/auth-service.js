@@ -2,11 +2,12 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { User, PasswordReset } from '../../models/index.js';
+import models from '../../models/index.js';
 import { ApiError } from '../../../utils/api-response.js';
-import { sendMail } from '../../../mail.js';
 import PasswordResetMail from '../../mails/password-reset-mail.js';
 import { Op } from 'sequelize';
+const { User, PasswordReset } = models;
+import { sendMail } from '../../../mail.js';
 
 class AuthService {
     constructor() {

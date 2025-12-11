@@ -2,7 +2,6 @@ import Stripe from "stripe";
 import AdCampaignService from "../../services/web/ad-campaign-service.js";
 import TransactionService from "../../services/web/transaction-service.js";
 import asyncHandler from "../../../utils/async-handler.js";
-import AdCampaign from "../../models/AdCampaign.js";
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 class PaymentController {

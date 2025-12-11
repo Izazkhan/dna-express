@@ -53,4 +53,17 @@ const IgStory = sequelize.define('IgStory', {
     updatedAt: 'updated_at'
 });
 
+IgStory.associate = (models) => {
+    IgStory.belongsTo(models.IgbAccount, {
+        foreignKey: 'igb_account_id',
+        as: 'igb_account'
+    });
+
+    IgStory.hasOne(models.IgStoryInsightMetric, {
+        foreignKey: 'ig_story_id',
+        as: 'insights'
+    });
+};
+
+
 export default IgStory;

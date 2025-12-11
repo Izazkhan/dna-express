@@ -40,4 +40,12 @@ const DataCity = sequelize.define('DataCity', {
     timestamps: false
 });
 
+DataCity.associate = (models) => {
+    DataCity.belongsTo(models.DataState, {
+        foreignKey: 'data_state_id',
+        as: 'state'
+    });
+};
+
+
 export default DataCity;

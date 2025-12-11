@@ -44,4 +44,12 @@ const DataCountry = sequelize.define('DataCountry', {
     timestamps: false
 });
 
+DataCountry.associate = (models) => {
+    DataCountry.hasMany(models.DataState, {
+        foreignKey: 'data_country_id',
+        as: 'states'
+    });
+};
+
+
 export default DataCountry;

@@ -4,7 +4,7 @@ import IgPostService from "../../services/app-api/ig-post-service.js";
 
 class PostsController {
     constructor() {
-        this.service = new IgPostService;
+        this.service = IgPostService;
     }
 
     getTopPosts = asyncHandler(async (req, res) => {

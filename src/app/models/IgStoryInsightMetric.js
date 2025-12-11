@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 
-const InstagramStoryInsightMetric = sequelize.define('InstagramStoryInsightMetric', {
+const IgStoryInsightMetric = sequelize.define('IgStoryInsightMetric', {
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
@@ -42,4 +42,12 @@ const InstagramStoryInsightMetric = sequelize.define('InstagramStoryInsightMetri
     updatedAt: 'updated_at'
 });
 
-export default InstagramStoryInsightMetric;
+IgStoryInsightMetric.associate = (models) => {
+    IgStoryInsightMetric.belongsTo(models.IgStory, {
+        foreignKey: 'ig_story_id',
+        as: 'story'
+    });
+};
+
+
+export default IgStoryInsightMetric;

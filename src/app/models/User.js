@@ -76,4 +76,22 @@ User.prototype.toJSON = function () {
     return values;
 };
 
+User.associate = (models) => {
+    User.hasOne(models.PasswordReset, {
+        foreignKey: 'user_id',
+        as: 'passwordReset'
+    });
+
+    User.hasMany(models.IgbAccount, {
+        foreignKey: 'user_id',
+        as: 'igb_accounts'
+    });
+
+    User.hasMany(models.AdCampaign, {
+        foreignKey: 'user_id',
+        as: 'campaigns'
+    });
+};
+
+
 export default User;

@@ -1,8 +1,10 @@
 import { paginate } from "../../../utils/pagination.js";
 import AdCampaignLocation from "../../models/AdCampaignLocation.js";
-import { AdCampaign, AdCampaignDemographic, User } from "../../models/index.js";
+import models from "../../models/index.js";
 import { sequelize } from "../../../config/database.js";
 import AdCampaignDemographicAgeRanges from "../../models/AdCampaignDemographicAgeRanges.js";
+
+const { AdCampaign, AdCampaignDemographic, User } = models;
 
 class AdCampaignService {
 

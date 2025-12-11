@@ -1,8 +1,10 @@
 import { Op } from "sequelize";
-import { User } from "../../models/index.js";
+import models from "../../models/index.js";
 import TokenService from "./token-service.js";
 import IgbAccount from "../../models/IgbAccount.js";
 import { ApiError } from "../../../utils/api-response.js";
+
+const { User } = models;
 
 class UserService {
     constructor() {

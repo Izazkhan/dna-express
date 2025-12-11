@@ -1,7 +1,9 @@
 import { ApiError } from "../../../utils/api-response.js";
 import IgbAccount from "../../models/IgbAccount.js";
-import { User } from "../../models/index.js";
+import models from "../../models/index.js";
 import TokenService from "./token-service.js";
+
+const { User } = models;
 
 class IgbAccountService {
     constructor() {

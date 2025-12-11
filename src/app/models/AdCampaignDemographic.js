@@ -21,4 +21,24 @@ const AdCampaignDemographic = sequelize.define('AdCampaignDemographic', {
     timestamps: false,
 });
 
+AdCampaignDemographic.associate = (models) => {
+    AdCampaignDemographic.belongsTo(models.AdCampaign, {
+        foreignKey: 'ad_campaign_id',
+        as: 'ad_campaign'
+    });
+
+    AdCampaignDemographic.hasMany(models.AdCampaignDemographicAgeRanges, {
+        foreignKey: 'ad_campaign_demographic_id',
+        as: 'age_range_ids'
+    });
+
+    AdCampaignDemographic.belongsToMany(models.AdCampaignAgeRange, {
+        through: models.AdCampaignDemographicAgeRanges,
+        foreignKey: 'ad_campaign_demographic_id',
+        otherKey: 'age_range_id',
+        as: 'age_ranges'
+    });
+};
+
+
 export default AdCampaignDemographic;

@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import User from './User.js';
 
 const PasswordReset = sequelize.define('PasswordReset', {
     id: {
@@ -29,5 +30,13 @@ const PasswordReset = sequelize.define('PasswordReset', {
     updatedAt: false,
     underscored: true,
 });
+
+PasswordReset.associate = (models) => {
+    PasswordReset.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+};
+
 
 export default PasswordReset;

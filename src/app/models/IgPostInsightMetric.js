@@ -42,4 +42,12 @@ const IgPostInsightMetric = sequelize.define('IgPostInsightMetric', {
     updatedAt: 'updated_at'
 });
 
+IgPostInsightMetric.associate = (models) => {
+    IgPostInsightMetric.belongsTo(models.IgPost, {
+        foreignKey: 'ig_post_id',
+        as: 'post'
+    });
+};
+
+
 export default IgPostInsightMetric;

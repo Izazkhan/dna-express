@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import User from './User.js';
 
 const IgbAccount = sequelize.define('IgbAccount', {
     id: {
@@ -64,5 +65,28 @@ const IgbAccount = sequelize.define('IgbAccount', {
         }
     }
 });
+
+IgbAccount.associate = (models) => {
+    IgbAccount.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+
+    IgbAccount.hasMany(models.IgPost, {
+        foreignKey: 'igb_account_id',
+        as: 'posts'
+    });
+
+    IgbAccount.hasMany(models.IgStory, {
+        foreignKey: 'igb_account_id',
+        as: 'stories'
+    });
+
+    IgbAccount.hasOne(models.IgProfileAverageInsights, {
+        foreignKey: 'igb_account_id',
+        as: 'profile_insights'
+    });
+};
+
 
 export default IgbAccount;

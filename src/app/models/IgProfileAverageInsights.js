@@ -39,7 +39,7 @@ const IgProfileAverageInsights = sequelize.define('IgProfileAverageInsights', {
         type: DataTypes.BIGINT,
         allowNull: true
     },
-    reach: {    
+    reach: {
         type: DataTypes.BIGINT,
         allowNull: true
     }
@@ -49,5 +49,13 @@ const IgProfileAverageInsights = sequelize.define('IgProfileAverageInsights', {
     createdAt: 'created_at',
     updatedAt: 'updated_at'
 });
+
+IgProfileAverageInsights.associate = (models) => {
+    IgProfileAverageInsights.belongsTo(models.IgbAccount, {
+        foreignKey: 'igb_account_id',
+        as: 'igb_account'
+    });
+};
+
 
 export default IgProfileAverageInsights;

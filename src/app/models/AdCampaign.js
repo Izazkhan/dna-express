@@ -1,6 +1,7 @@
 // models/AdCampaign.js
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import User from './User.js';
 
 const AdCampaign = sequelize.define('AdCampaign', {
     id: {
@@ -150,12 +151,12 @@ const AdCampaign = sequelize.define('AdCampaign', {
     content_link: {
         type: DataTypes.STRING,
         allowNull: true,
-    // },
-    // impressions_cap_state: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: true,
-    //     defaultValue: 0,
-    //     validate: { isInt: true },
+        // },
+        // impressions_cap_state: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: true,
+        //     defaultValue: 0,
+        //     validate: { isInt: true },
     }
 }, {
     tableName: 'ad_campaigns',
@@ -163,5 +164,33 @@ const AdCampaign = sequelize.define('AdCampaign', {
     createdAt: 'created_at',
     updatedAt: 'updated_at'
 });
+
+AdCampaign.associate = (models) => {
+    AdCampaign.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+    });
+
+    AdCampaign.hasOne(models.AdCampaignDemographic, {
+        foreignKey: 'ad_campaign_id',
+        as: 'demographics'
+    });
+
+    AdCampaign.hasMany(models.AdCampaignLocation, {
+        foreignKey: 'ad_campaign_id',
+        as: 'locations'
+    });
+
+    AdCampaign.belongsTo(models.AdCampaignDeliverable, {
+        foreignKey: 'ad_campaign_deliverable_id',
+        as: 'deliverable'
+    });
+
+    AdCampaign.belongsTo(models.AdCampaignEngagementRange, {
+        foreignKey: 'ad_campaign_engagement_range_id',
+        as: 'engagement_rate'
+    });
+};
+
 
 export default AdCampaign;

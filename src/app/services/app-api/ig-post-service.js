@@ -1,8 +1,12 @@
 import { Op } from "sequelize";
-import { IgPost } from "../../models/index.js";
+import models from "../../models/index.js";
 
-export default class IgPostService {
+const { IgPost } = models;
+
+class IgPostService {
     async getTopPosts(req) {
         return await IgPost.findAll();
     }
 }
+
+export default new IgPostService;

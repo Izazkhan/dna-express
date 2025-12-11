@@ -1,8 +1,9 @@
 // services/UserService.js
-import { User } from '../../models/index.js';
+import models from '../../models/index.js';
 import { ApiError } from '../../../utils/api-response.js';
 import bcrypt from 'bcryptjs';
 
+const { User } = models;
 class UserService {
     // [Api] Get user by ID
     async getUserById(id) {
