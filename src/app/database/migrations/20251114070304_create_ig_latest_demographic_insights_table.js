@@ -18,7 +18,7 @@ module.exports = {
                 
                 percent_male_binary     FLOAT,
                 percent_female_binary   FLOAT,
-                binary_total            FLOAT,
+                binary_total            BIGINT,
                 
                 created_at TIMESTAMPTZ DEFAULT NOW(),
                 updated_at TIMESTAMPTZ DEFAULT NOW()
