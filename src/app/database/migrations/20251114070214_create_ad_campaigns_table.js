@@ -7,7 +7,6 @@ module.exports = {
                 id              BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 user_id         BIGINT references users(id) NULL,
                 published       BOOLEAN DEFAULT FALSE,
-                is_matching     BOOLEAN DEFAULT FALSE,
                 is_test         BOOLEAN DEFAULT FALSE,
                 name            VARCHAR(255) NOT NULL,
                 platform        VARCHAR(32),
@@ -31,9 +30,13 @@ module.exports = {
                 meta JSON,
                 -- impressions_cap_state INTEGER DEFAULT 0,
                 draft_date      timestamptz,
+                
+                is_matching     BOOLEAN DEFAULT FALSE,
+                matcher_run_at  timestamptz NULL,
+
                 created_at      timestamptz,
                 updated_at      timestamptz
-            );
+                );
 
             -- Indexes for performance
             CREATE INDEX IF NOT EXISTS idx_ad_campaigns_published ON ad_campaigns(published);

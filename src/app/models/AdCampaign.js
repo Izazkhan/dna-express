@@ -38,6 +38,10 @@ const AdCampaign = sequelize.define('AdCampaign', {
         type: DataTypes.BOOLEAN,
         allowNull: true
     },
+    matcher_run_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     is_test: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

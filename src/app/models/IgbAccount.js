@@ -82,9 +82,19 @@ IgbAccount.associate = (models) => {
         as: 'stories'
     });
 
-    IgbAccount.hasOne(models.IgProfileAverageInsights, {
+    IgbAccount.hasOne(models.IgProfileInsights, {
         foreignKey: 'igb_account_id',
         as: 'profile_insights'
+    });
+
+    IgbAccount.hasOne(models.IgProfileAverageInsights, {
+        foreignKey: 'igb_account_id',
+        as: 'profile_average_insights'
+    });
+
+    IgbAccount.hasOne(models.IgLatestDemographicInsights, {
+        foreignKey: 'igb_account_id',
+        as: 'demographics'
     });
 };
 

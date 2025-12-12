@@ -7,10 +7,12 @@ import locationsRoutes from './locations-routes.js';
 import paymentRoutes from './payment-routes.js';
 import transactionsRoutes from './transactions-routes.js';
 import AuthMiddleware from '../../app/middlewares/auth-middleware.js';
+import TestingController from '../../app/controllers/testing-controller.js';
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
+router.get('/testing', TestingController.index);
 
 router.use(AuthMiddleware.handle); // below this line the routes are protected
 router.use('/users', userRoutes);
