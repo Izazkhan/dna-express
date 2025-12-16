@@ -21,26 +21,31 @@ module.exports = {
         };
 
         const posts = [];
+        const [igbAccounts] = await queryInterface.sequelize.query(`
+            SELECT id from igb_accounts
+        `);
+        for (const ia of igbAccounts) {
 
-        for (let i = 0; i < 50; i++) {
-            const dim = pickDimension();
+            for (let i = 0; i < 50; i++) {
+                const dim = pickDimension();
 
-            posts.push({
-                igb_account_id: 1,
-                is_active: true,
-                fb_post_id: `fake_fb_post_${i + 1}`,
-                likes: Math.floor(Math.random() * 5000),
-                comments: Math.floor(Math.random() * 500),
-                permalink: `https://instagram.com/p/fake_${i + 1}`,
-                media_type: randomMediaType(),
-                media_url: `https://picsum.photos/${dim.w}/${dim.h}?random=${i + 1}`,
-                thumbnail_url: `https://picsum.photos/${Math.floor(dim.w / 2)}/${Math.floor(dim.h / 2)}?thumb=${i + 1}`,
-                caption: `Fake caption for post ${i + 1}`,
-                video_title: null,
-                media_product_type: 'FEED',
-                created_at: new Date(),
-                updated_at: new Date()
-            });
+                posts.push({
+                    igb_account_id: ia.id,
+                    is_active: true,
+                    fb_post_id: `fake_fb_post_${i + 1}`,
+                    likes: Math.floor(Math.random() * 5000),
+                    comments: Math.floor(Math.random() * 500),
+                    permalink: `https://instagram.com/p/fake_${i + 1}`,
+                    media_type: randomMediaType(),
+                    media_url: `https://picsum.photos/${dim.w}/${dim.h}?random=${i + 1}`,
+                    thumbnail_url: `https://picsum.photos/${Math.floor(dim.w / 2)}/${Math.floor(dim.h / 2)}?thumb=${i + 1}`,
+                    caption: `Fake caption for post ${i + 1}`,
+                    video_title: null,
+                    media_product_type: 'FEED',
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+            }
         }
 
         // Clear table first

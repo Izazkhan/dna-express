@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import models from '../models/index.js';
+import { sequelize } from '../../config/database.js';
 
 const {
     AdCampaign,
@@ -20,8 +21,6 @@ class MatcherService {
      */
     async run() {
         try {
-            console.log('🔍 Starting campaign matcher...');
-
             // Step 1: Fetch active campaigns
             const now = new Date();
             const openCampaigns = await AdCampaign.findAll({
@@ -49,24 +48,16 @@ class MatcherService {
                 ],
             });
 
-            console.log(`📋 Found ${openCampaigns.length} active campaigns`);
-
             let totalMatches = 0;
-
             for (const campaign of openCampaigns) {
-                console.log(`\n🎯 Matching campaign: ${campaign.id} - ${campaign.name || 'Untitled'}`);
                 const matches = await this.matchCampaign(campaign);
-                // campaign.matcher_run_at = new Date();
+                campaign.matcher_run_at = new Date();
                 if (matches.length > 0) {
-                    // campaign.is_matching = true;
+                    campaign.is_matching = true;
                 }
-                // await campaign.save();
+                await campaign.save();
                 totalMatches += matches;
-                // return { ac: campaign };
-                console.log(`   ✅ Found ${matches} matches for campaign ${campaign.id}`);
             }
-
-            console.log(`\n🎉 Matching complete! Total matches: ${totalMatches}`);
             return { success: true, totalMatches };
         } catch (err) {
             console.error('❌ Error in MatcherService.run:', err);
@@ -79,117 +70,63 @@ class MatcherService {
      * @param {AdCampaign} campaign
      */
     async matchCampaign(campaign) {
-        const includeClause = [
-            // {
-            //     model: IgProfileInsights,
-            //     as: 'profile_insights',
-            //     required: true,
-            // },
-            {
-                model: IgProfileAverageInsights,
-                as: 'profile_average_insights',
-                required: false, // only apply filters if engagementRange exists
-            }
-        ];
 
-        const whereClause = { is_active: true }; // Only active IGB accounts
-
-        // --- Demographics Filtering ---
-        const demographics = campaign.demographics; // assuming single demographic
-        if (demographics) {
-            const followerFilters = {};
-
-            if (campaign.follower_min) followerFilters[Op.gte] = campaign.follower_min;
-            if (campaign.follower_max) followerFilters[Op.lte] = campaign.follower_max;
-
-            if (Object.keys(followerFilters).length > 0) {
-                includeClause[0].where = { followers_count: followerFilters };
-            }
-
-            // Gender filters
-            if (demographics.use_gender) {
-                const minFemale = demographics.percent_female || 0;
-                const minMale = demographics.percent_male || 0;
-                includeClause.push({
-                    model: IgLatestDemographicInsights,
-                    as: 'demographics',
-                    where: {
-                        [Op.or]: [
-                            { percent_female: { [Op.gte]: minFemale } },
-                            { percent_male: { [Op.gte]: minMale } }
-                        ],
-                    },
-                    required: true
-                });
-            }
-        }
-
-        // --- Engagement Filtering ---
-        const engagementRange = campaign.engagement_rate;
-        if (engagementRange) {
-            const engagementWhere = {};
-            if (campaign.likes_min) engagementWhere.likes = { [Op.gte]: campaign.likes_min };
-
-            if (engagementRange.lower) engagementWhere.engagement = { [Op.gte]: engagementRange.lower };
-            if (engagementRange.upper) engagementWhere.engagement = { ...(engagementWhere.engagement || {}), [Op.lte]: engagementRange.upper };
-            console.log(engagementWhere, campaign.toJSON());
-            if (Object.keys(engagementWhere).length > 0) {
-                includeClause.push({
-                    model: IgProfileAverageInsights,
-                    as: 'profile_average_insights',
-                    where: engagementWhere,
-                    required: true
-                });
-            }
-        }
-
-        // Step 3: Find eligible accounts
-        const eligibleAccounts = await IgbAccount.findAll({
-            where: whereClause,
-            include: includeClause,
+        // Find new matches (eligible igb accounts)
+        const eligibleAccounts = await sequelize.query(`
+                    SELECT 
+                    ia.id AS igb_account_id,
+                    ia.username,
+                    ia.name,
+                    pai.engagement,
+                    pai.likes,
+                    pai.followers_count,
+                    ldi.percent_male,
+                    ldi.percent_female
+                    
+                    FROM igb_accounts AS ia
+                    JOIN ig_profile_average_insights AS pai ON pai.igb_account_id = ia.id
+                    LEFT JOIN ig_latest_demographic_insights as ldi ON ldi.igb_account_id = ia.id
+                    WHERE ia.is_active = true 
+                    AND pai.engagement BETWEEN :lower_engagement AND :upper_engagement
+                    AND pai.likes >= :likes_min
+                    AND pai.followers_count >= :followers_min
+                    AND (
+                        :use_gender = false
+                        OR (
+                            ldi.percent_male >= :percent_male
+                            AND ldi.percent_female >= :percent_female
+                        )
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM ad_campaign_igb_account_user acu
+                        WHERE acu.igb_account_id = ia.id
+                        AND acu.ad_campaign_id = :campaign_id
+                    )
+                `, {
+            replacements: {
+                lower_engagement: campaign.engagement_rate?.lower,
+                upper_engagement: campaign.engagement_rate?.upper,
+                percent_male: campaign.demographics.percent_female,
+                percent_female: campaign.demographics.percent_female,
+                campaign_id: campaign.id,
+                use_gender: campaign.demographics?.use_gender,
+                likes_min: campaign.likes_min,
+                followers_min: campaign.follower_min
+            },
+            type: 'SELECT'
         });
 
-
-        if (!eligibleAccounts.length) return 0;
-
-        // Step 4: Avoid duplicate matches
-        const existingMatches = await AdCampaignIgbAccountUser.findAll({
-            where: { ad_campaign_id: campaign.id },
-            attributes: ['igb_account_id']
-        });
-        const existingIds = new Set(existingMatches.map(m => m.igb_account_id));
-
-        const newMatches = eligibleAccounts
-            .filter(acc => !existingIds.has(acc.id))
-            .map(acc => ({
-                ad_campaign_id: campaign.id,
-                igb_account_id: acc.id,
-                ad_campaign_state_id: 1, // matched
-            }));
-
+        let newMatches = eligibleAccounts.map(match => ({
+            ad_campaign_id: campaign.id,
+            igb_account_id: match.igb_account_id,
+            ad_campaign_state_id: 1
+        }))
         if (newMatches.length) {
-            // await AdCampaignIgbAccountUser.bulkCreate(newMatches);
+            await AdCampaignIgbAccountUser.bulkCreate(newMatches);
         }
 
         return newMatches.length;
-    }
-
-    /**
-     * Match a single campaign by ID
-     * @param {number} campaignId
-     */
-    async matchSingleCampaign(campaignId) {
-        const campaign = await AdCampaign.findByPk(campaignId, {
-            include: [
-                { model: AdCampaignDemographic, as: 'demographics', required: false },
-                { model: AdCampaignEngagementRange, as: 'engagement_rate', required: false },
-            ]
-        });
-
-        if (!campaign) throw new Error(`Campaign ${campaignId} not found`);
-
-        const matches = await this.matchCampaign(campaign);
-        return { success: true, matches };
     }
 }
 

@@ -5,17 +5,17 @@ module.exports = {
     async up(queryInterface, Sequelize) {
 
         // -----------------------------------------------------
-        // Constants
-        // -----------------------------------------------------
-        const FB_USER_ID = "fb_user_1234567890";
-
-        // -----------------------------------------------------
         // User Seed Data
         // -----------------------------------------------------
         const users = [
             {
-                fb_user_id: FB_USER_ID,
-                access_token: "cb6a33faf0f842a4347da3eb74de4598:06b3e21299d05575712a3e63f69dc08ef3138de516c8c42d92f5e7d6221551b1", // encrypted version of: fb_user_token_1234567890
+                fb_user_id: 'fb_user_1234567890',
+                access_token: "e8096ecdacc2e8e53dc2f4ef0c0cbf71:88c6ee450cc3a6caa9e45cf6bbc511f3bfd03847b95baf16d90beca4a92e80a4", // encrypted version of: fb_user_token_1234567890
+                created_at: new Date(),
+                updated_at: new Date()
+            }, {
+                fb_user_id: 'fb_user_1234567891',
+                access_token: "8dc730145b56d03918752e74c7a1cf84:008f28d3ce456939ad169fa7235e45f86c23878b6063e1400e3a33c467f77a9e", // encrypted version of: fb_user_token_1234567891
                 created_at: new Date(),
                 updated_at: new Date()
             }
@@ -38,6 +38,21 @@ module.exports = {
                 is_active: true,
                 is_featured: true,
                 featured_date: "2025-06-01T00:00:00Z",
+                created_at: new Date(),
+                updated_at: new Date()
+            }, {
+                user_id: 2,
+                fb_page_id: "fb_page_1111111112",
+                instagram_account_id: "ig_account_17841401234567891",
+                name: "Izaz Khan",
+                username: "izaz_biz_insta",
+                profile_picture_url: "https://example.com/profile1.jpg",
+                website: "https://izaz-biz.com",
+                is_profile: true,
+                is_tag_generator: false,
+                is_active: true,
+                is_featured: true,
+                featured_date: "2025-06-02T00:00:00Z",
                 created_at: new Date(),
                 updated_at: new Date()
             }
