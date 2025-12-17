@@ -18,6 +18,11 @@ module.exports = {
                 access_token: "8dc730145b56d03918752e74c7a1cf84:008f28d3ce456939ad169fa7235e45f86c23878b6063e1400e3a33c467f77a9e", // encrypted version of: fb_user_token_1234567891
                 created_at: new Date(),
                 updated_at: new Date()
+            }, {
+                fb_user_id: 'fb_user_1234567892',
+                access_token: "192107a9dab382adc3e9681685a9ecc7:72c633fa86997374fc69c469c550f1bf4850a843659803acc4a9d07df4b2fb2a", // encrypted version of: fb_user_token_1234567892
+                created_at: new Date(),
+                updated_at: new Date()
             }
         ];
 
@@ -48,6 +53,21 @@ module.exports = {
                 username: "izaz_biz_insta",
                 profile_picture_url: "https://example.com/profile1.jpg",
                 website: "https://izaz-biz.com",
+                is_profile: true,
+                is_tag_generator: false,
+                is_active: true,
+                is_featured: true,
+                featured_date: "2025-06-02T00:00:00Z",
+                created_at: new Date(),
+                updated_at: new Date()
+            }, {
+                user_id: 3,
+                fb_page_id: "fb_page_1111111113",
+                instagram_account_id: "ig_account_17841401234567892",
+                name: "Izaz Khan",
+                username: "izaz_biz_insta",
+                profile_picture_url: "https://example.com/profile1.jpg",
+                website: "https://azaz-biz.com",
                 is_profile: true,
                 is_tag_generator: false,
                 is_active: true,

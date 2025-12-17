@@ -3,16 +3,16 @@ import { sequelize } from '../../config/database.js';
 
 const DataCity = sequelize.define('DataCity', {
     id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
     },
     data_country_id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     data_state_id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     name: {

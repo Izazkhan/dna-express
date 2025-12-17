@@ -3,12 +3,12 @@ import { sequelize } from '../../config/database.js';
 
 const DataState = sequelize.define('DataState', {
     id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
     },
     data_country_id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     name: {

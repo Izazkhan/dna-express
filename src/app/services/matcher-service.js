@@ -58,7 +58,7 @@ class MatcherService {
                 await campaign.save();
                 totalMatches += matches;
             }
-            return { success: true, totalMatches };
+            return { success: true, newMatches: totalMatches, totalCampaigns: openCampaigns.length };
         } catch (err) {
             console.error('❌ Error in MatcherService.run:', err);
             throw err;

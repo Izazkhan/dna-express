@@ -3,7 +3,7 @@ import { sequelize } from '../../config/database.js';
 
 const DataCountry = sequelize.define('DataCountry', {
     id: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
     },
