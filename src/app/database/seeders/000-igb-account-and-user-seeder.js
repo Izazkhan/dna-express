@@ -65,7 +65,7 @@ module.exports = {
                 fb_page_id: "fb_page_1111111113",
                 instagram_account_id: "ig_account_17841401234567892",
                 name: "Izaz Khan",
-                username: "izaz_biz_insta",
+                username: "azaz_biz_insta",
                 profile_picture_url: "https://example.com/profile1.jpg",
                 website: "https://azaz-biz.com",
                 is_profile: true,

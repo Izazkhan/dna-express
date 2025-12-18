@@ -45,10 +45,12 @@ class MatcherService {
                         as: 'engagement_rate',
                         required: false,
                     },
+                    'locations'
                 ],
             });
 
             let totalMatches = 0;
+            console.error('Error in MatcherService.run:', openCampaigns.length);
             for (const campaign of openCampaigns) {
                 const matches = await this.matchCampaign(campaign);
                 campaign.matcher_run_at = new Date();
@@ -58,7 +60,7 @@ class MatcherService {
                 await campaign.save();
                 totalMatches += matches;
             }
-            return { success: true, newMatches: totalMatches, totalCampaigns: openCampaigns.length };
+            return { success: true, newMatches: totalMatches, totalOpenCampaigns: openCampaigns.length };
         } catch (err) {
             console.error('❌ Error in MatcherService.run:', err);
             throw err;
@@ -81,11 +83,39 @@ class MatcherService {
                     pai.likes,
                     pai.followers_count,
                     ldi.percent_male,
-                    ldi.percent_female
+                    ldi.percent_female,
+                    lacc_sum.audience_value
                     
                     FROM igb_accounts AS ia
                     JOIN ig_profile_average_insights AS pai ON pai.igb_account_id = ia.id
                     LEFT JOIN ig_latest_demographic_insights as ldi ON ldi.igb_account_id = ia.id
+                    
+                    JOIN (
+                        SELECT igb_account_id, SUM(value) AS audience_value, data_state_id,
+                        CASE
+                            WHEN :city_id IS NOT NULL
+                            THEN data_city_id
+                            ELSE NULL
+                        END AS data_city_id
+                        FROM ig_latest_audience_city_counts AS lacc
+                        WHERE (
+                            (
+                                :city_id IS NOT NULL
+                                AND data_city_id = :city_id
+                            )
+                            OR (
+                                :city_id IS NULL
+                                AND data_state_id = :state_id
+                            )
+                        )
+                        GROUP BY igb_account_id, data_state_id, 
+                        CASE
+                            WHEN :city_id IS NOT NULL
+                            THEN data_city_id
+                            ELSE NULL
+                        END
+                    ) lacc_sum ON lacc_sum.igb_account_id = ia.id
+                    
                     WHERE ia.is_active = true 
                     AND pai.engagement BETWEEN :lower_engagement AND :upper_engagement
                     AND pai.likes >= :likes_min
@@ -112,7 +142,10 @@ class MatcherService {
                 campaign_id: campaign.id,
                 use_gender: campaign.demographics?.use_gender,
                 likes_min: campaign.likes_min,
-                followers_min: campaign.follower_min
+                followers_min: campaign.follower_min,
+                city_id: campaign?.locations?.[0]?.data_city_id || null,
+                state_id: campaign?.locations?.[0]?.data_state_id || null,
+                country_id: campaign?.locations?.[0]?.data_country_id || null
             },
             type: 'SELECT'
         });

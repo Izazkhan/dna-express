@@ -96,6 +96,11 @@ IgbAccount.associate = (models) => {
         foreignKey: 'igb_account_id',
         as: 'demographics'
     });
+    
+    IgbAccount.hasMany(models.IgLatestAudienceCityCounts, {
+        foreignKey: 'igb_account_id',
+        as: 'audience_by_city'
+    });
 };
 
 

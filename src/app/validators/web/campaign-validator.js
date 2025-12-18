@@ -183,6 +183,7 @@ export const validateUpdateCampaign = Joi.object({
             'any.required': 'Engagement range is required',
         }),
 
+    matcher_run_at: Joi.date().iso().allow(null),
     draft_date: Joi.date().iso().allow(null),
     publish_from: Joi.date().iso().required()
         .messages({

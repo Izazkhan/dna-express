@@ -19,6 +19,7 @@ import IgProfileAverageInsights from './IgProfileAverageInsights.js';
 import IgProfileInsights from './IgProfileInsights.js';
 import AdCampaignIgbAccountUser from './AdCampaignIgbAccountUser.js';
 import IgLatestDemographicInsights from './IgLatestDemographicInsights.js';
+import IgLatestAudienceCityCounts from './IgLatestAudienceCityCounts.js';
 
 const models = {
     User,
@@ -41,7 +42,8 @@ const models = {
     IgStoryInsightMetric,
     IgProfileInsights,
     IgProfileAverageInsights,
-    IgLatestDemographicInsights
+    IgLatestDemographicInsights,
+    IgLatestAudienceCityCounts
 }
 
 Object.values(models).forEach((model) => {

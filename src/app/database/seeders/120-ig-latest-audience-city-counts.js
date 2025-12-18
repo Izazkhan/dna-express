@@ -8,6 +8,7 @@ module.exports = {
         const LOCATION_PROFILES = [
             {
                 stateId: 1434, // Arizona
+                ratio: 0.6,
                 cities: [
                     { cityId: 121748, ratio: 0.6 }, // Miami
                     { cityId: 127874, ratio: 0.4 }  // Tucson
@@ -15,6 +16,7 @@ module.exports = {
             },
             {
                 stateId: 1416, // California
+                ratio: 0.4,
                 cities: [
                     { cityId: 120784, ratio: 0.55 }, // Los Angeles
                     { cityId: 125809, ratio: 0.45 }  // San Francisco
@@ -22,9 +24,9 @@ module.exports = {
             }
         ];
 
-        // Fetch accounts with followers
+        // Fetch accounts
         const accounts = await queryInterface.sequelize.query(`
-        SELECT 
+        SELECT
             a.id AS igb_account_id,
             pi.followers_count
         FROM igb_accounts a
@@ -36,50 +38,69 @@ module.exports = {
         );
 
         const rows = [];
-console.log('accounts', accounts.length);
-        accounts.forEach((acc, index) => {
-            let profile = LOCATION_PROFILES[0]; // for all other profiles, seed Arizona
-            if (index == 1) {
-                profile = LOCATION_PROFILES[1]; // Seed California
-            }
 
-            // Safety check
-            if (!profile) return;
-            if (!acc.followers_count || acc.followers_count <= 0) return;
+        // ✅ Pick ONE account to NOT be mixed
+        
+        const singleProfileAccountId = accounts[0].igb_account_id;
+        for (const acc of accounts) {
+            if (!acc.followers_count || acc.followers_count <= 0) continue;
 
-            const total = acc.followers_count;
-            let allocated = 0;
+            const totalFollowers = acc.followers_count;
 
-            profile.cities.forEach((city, cityIndex) => {
-                let value;
+            // 🔹 Decide profiles for this account
+            const profilesToUse =
+                acc.igb_account_id === singleProfileAccountId
+                    ? [LOCATION_PROFILES[0]]        // single location only
+                    : LOCATION_PROFILES;            // mixed locations
 
-                // Last city gets remainder to preserve total
-                if (cityIndex === profile.cities.length - 1) {
-                    value = total - allocated;
+            let allocatedAcrossProfiles = 0;
+
+            profilesToUse.forEach((profile, profileIndex) => {
+                let profileFollowers;
+
+                // Last profile gets remainder
+                if (profileIndex === profilesToUse.length - 1) {
+                    profileFollowers = totalFollowers - allocatedAcrossProfiles;
                 } else {
-                    value = Math.floor(total * city.ratio);
-                    allocated += value;
+                    profileFollowers = Math.floor(
+                        totalFollowers * (profile.ratio || 1 / profilesToUse.length)
+                    );
+                    allocatedAcrossProfiles += profileFollowers;
                 }
-                console.log('Here...', profile);
-                rows.push({
-                    igb_account_id: acc.igb_account_id,
-                    data_country_id: COUNTRY_ID,
-                    data_state_id: profile.stateId,
-                    data_city_id: city.cityId,
-                    value,
-                    created_at: new Date(),
-                    updated_at: new Date()
+
+                let allocatedCityFollowers = 0;
+
+                profile.cities.forEach((city, cityIndex) => {
+                    let cityFollowers;
+
+                    // Last city gets remainder
+                    if (cityIndex === profile.cities.length - 1) {
+                        cityFollowers = profileFollowers - allocatedCityFollowers;
+                    } else {
+                        cityFollowers = Math.floor(profileFollowers * city.ratio);
+                        allocatedCityFollowers += cityFollowers;
+                    }
+
+                    rows.push({
+                        igb_account_id: acc.igb_account_id,
+                        data_country_id: COUNTRY_ID,
+                        data_state_id: profile.stateId,
+                        data_city_id: city.cityId,
+                        value: cityFollowers,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
                 });
             });
-        });
+        }
 
         // Reset table
         await queryInterface.sequelize.query(`
-      TRUNCATE TABLE ig_latest_audience_city_counts
-      RESTART IDENTITY CASCADE;
-    `);
+            TRUNCATE TABLE ig_latest_audience_city_counts
+            RESTART IDENTITY CASCADE;
+        `);
 
-        if (rows.length > 0) {
+        if (rows.length) {
             await queryInterface.bulkInsert(
                 'ig_latest_audience_city_counts',
                 rows,
@@ -91,9 +112,7 @@ console.log('accounts', accounts.length);
     async down(queryInterface, Sequelize) {
         await queryInterface.bulkDelete(
             'ig_latest_audience_city_counts',
-            {
-                data_country_id: 233
-            },
+            { data_country_id: 233 },
             {}
         );
     }
