@@ -15,7 +15,7 @@ router.use(AppAuthMiddleware.handle);
 // PROTECTED USER ROUTES
 router.use('/users', userPrivateRoutes);
 router.use('/igb-accounts', IgPostsRoutes);
-router.use('/adcampaigns/', InfluencersRoutes);
+router.use('/', InfluencersRoutes);
 
 // other protected routing groups go here…
 

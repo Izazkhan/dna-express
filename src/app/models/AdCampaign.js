@@ -166,7 +166,12 @@ const AdCampaign = sequelize.define('AdCampaign', {
     tableName: 'ad_campaigns',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    scopes: {
+        isMatching: {
+            where: { is_matching: true }
+        }
+    }
 });
 
 AdCampaign.associate = (models) => {
@@ -183,6 +188,16 @@ AdCampaign.associate = (models) => {
     AdCampaign.hasMany(models.AdCampaignLocation, {
         foreignKey: 'ad_campaign_id',
         as: 'locations'
+    });
+
+    AdCampaign.hasMany(models.AdCampaignIgbAccountUser, {
+        foreignKey: 'ad_campaign_id',
+        as: 'matches'
+    });
+
+    AdCampaign.hasOne(models.AdCampaignIgbAccountUser, {
+        foreignKey: 'ad_campaign_id',
+        as: 'match',
     });
 
     AdCampaign.belongsTo(models.AdCampaignDeliverable, {

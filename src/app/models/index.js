@@ -20,6 +20,7 @@ import IgProfileInsights from './IgProfileInsights.js';
 import AdCampaignIgbAccountUser from './AdCampaignIgbAccountUser.js';
 import IgLatestDemographicInsights from './IgLatestDemographicInsights.js';
 import IgLatestAudienceCityCounts from './IgLatestAudienceCityCounts.js';
+import AdCampaignState from './AdCampaignState.js';
 
 const models = {
     User,
@@ -35,6 +36,7 @@ const models = {
     AdCampaignDemographicAgeRanges,
     AdCampaignAgeRange,
     AdCampaignEngagementRange,
+    AdCampaignState,
     IgbAccount,
     IgPost,
     IgPostInsightMetric,

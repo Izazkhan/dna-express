@@ -12,7 +12,6 @@ module.exports = {
             viewed               BOOLEAN DEFAULT FALSE,
             publish_date         TIMESTAMPTZ,
             rejected             BOOLEAN DEFAULT FALSE,
-            -- platform_id          INTEGER,
             ig_post_id           BIGINT REFERENCES ig_posts (id),
             ig_story_id          BIGINT REFERENCES ig_stories (id),
             is_defaulted         BOOLEAN NULL DEFAULT FALSE,

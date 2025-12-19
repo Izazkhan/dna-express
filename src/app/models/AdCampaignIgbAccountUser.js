@@ -55,4 +55,16 @@ const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     updatedAt: 'updated_at',
 });
 
+AdCampaignIgbAccountUser.associate = (models) => {
+    AdCampaignIgbAccountUser.belongsTo(models.AdCampaign, {
+        foreignKey: 'ad_campaign_id',
+        as: 'ad_campaign'
+    });
+    
+    AdCampaignIgbAccountUser.belongsTo(models.AdCampaignState, {
+        foreignKey: 'ad_campaign_id',
+        as: 'ad_campaign_state'
+    });
+}
+
 export default AdCampaignIgbAccountUser;

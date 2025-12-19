@@ -49,7 +49,7 @@ class UserService {
         })
 
         if (!account) {
-            throw new ApiError(404, 'Igb Account not found');
+            throw new ApiError(404, 'Igb account not found');
         }
 
         return account;
