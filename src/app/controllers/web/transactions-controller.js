@@ -6,27 +6,17 @@ class TransactionsController {
         this.service = TransactionService;
     }
     create = asyncHandler(async (req, res) => {
-        try {
-            const transaction = await this.service.create(req.body);
-            return res.status(201).json(transaction);
-        } catch (error) {
-            console.error("Transaction error:", error);
-            return res.status(500).json({ error: error.message });
-        }
+        const transaction = await this.service.create(req.body);
+        return res.status(201).json(transaction);
     })
 
     get = asyncHandler(async (req, res) => {
-        try {
-            const { transactionId } = req.params;
-            const transaction = await this.service.getTransactionById(transactionId);
-            if (transaction) {
-                res.json(transaction);
-            } else {
-                return res.status(404).json({ message: 'Transaction not found' });
-            }
-        } catch (error) {
-            console.error("Transaction error:", error);
-            return res.status(500).json({ error: error.message });
+        const { transactionId } = req.params;
+        const transaction = await this.service.getTransactionById(transactionId);
+        if (transaction) {
+            res.json(transaction);
+        } else {
+            return res.status(404).json({ message: 'Transaction not found' });
         }
     })
 }

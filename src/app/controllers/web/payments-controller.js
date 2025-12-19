@@ -10,53 +10,41 @@ class PaymentController {
         this.transactionService = TransactionService;
     }
     createPaymentIntent = asyncHandler(async (req, res) => {
-        try {
-            const { amount, currency, metadata } = req.body;
+        const { amount, currency, metadata } = req.body;
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency,
+            automatic_payment_methods: {
+                enabled: false,
+            },
+            payment_method_types: ["card"],
+            metadata: metadata
+        });
 
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount,
-                currency,
-                automatic_payment_methods: {
-                    enabled: false,
-                },
-                payment_method_types: ["card"],
-                metadata: metadata
-            });
-
-            res.json({
-                clientSecret: paymentIntent.client_secret,
-            });
-
-        } catch (error) {
-            console.error("Stripe error:", error);
-            return res.status(500).json({ error: error.message });
-        }
+        res.json({
+            clientSecret: paymentIntent.client_secret,
+        });
     })
 
     verifyPayment = asyncHandler(async (req, res) => {
         const paymentIntentId = req.params.id;
 
-        try {
-            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-            if (paymentIntent.status === 'succeeded') {
-                let metadata = paymentIntent.metadata;
-                let campaign = await this.adCampaignService.get(req, metadata.campaign_id)
-                res.json({
-                    success: true,
-                    message: 'Payment verified successfully.',
-                    status: paymentIntent.status,
-                    amount: paymentIntent.amount,
-                    fee: metadata.transaction_fee,
-                    currency: paymentIntent.currency,
-                    campaign: campaign
-                });
-            } else {
-                res.json({ success: false, message: 'Payment not completed.' });
-            }
-        } catch (error) {
-            console.error("Stripe error:", error);
-            return res.status(500).json({ error: error.message });
+        if (paymentIntent.status === 'succeeded') {
+            let metadata = paymentIntent.metadata;
+            let campaign = await this.adCampaignService.get(req, metadata.campaign_id)
+            res.json({
+                success: true,
+                message: 'Payment verified successfully.',
+                status: paymentIntent.status,
+                amount: paymentIntent.amount,
+                fee: metadata.transaction_fee,
+                currency: paymentIntent.currency,
+                campaign: campaign
+            });
+        } else {
+            res.json({ success: false, message: 'Payment not completed.' });
         }
     })
 

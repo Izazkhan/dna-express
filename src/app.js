@@ -9,6 +9,8 @@ import { errorHandler, notFound } from './app/middlewares/error-middleware.js';
 import logger from './utils/logger.js';
 import PaymentController from './app/controllers/web/payments-controller.js';
 import cookieParser from 'cookie-parser';
+import cron from 'node-cron';
+import MatcherService from './app/services/matcher-service.js';
 
 const app = express();
 
@@ -43,6 +45,12 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/app', appRoutes);
 app.use('/api/web', webRoutes);
+
+cron.schedule('* * * * *', async () => {
+  console.log('Running task every minute');
+  await MatcherService.run();
+});
+
 
 // Error handling
 app.use(notFound);

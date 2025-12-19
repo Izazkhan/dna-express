@@ -59,6 +59,7 @@ class MatcherService {
                 await campaign.save();
                 totalMatches += matches;
             }
+            console.log(`New matches: ${totalMatches}`)
             return {
                 success: true,
                 newMatches: totalMatches,

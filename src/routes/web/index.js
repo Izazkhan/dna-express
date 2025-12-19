@@ -4,6 +4,7 @@ import authRoutes from './auth-routes.js';
 import userRoutes from './user-routes.js';
 import adCampaignRoutes from './ad-campaign-routes.js';
 import locationsRoutes from './locations-routes.js';
+import influencerRoutes from './influencers-routes.js';
 import paymentRoutes from './payment-routes.js';
 import transactionsRoutes from './transactions-routes.js';
 import AuthMiddleware from '../../app/middlewares/auth-middleware.js';
@@ -20,5 +21,6 @@ router.use('/adcampaigns', adCampaignRoutes);
 router.use('/locations', locationsRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/transactions', transactionsRoutes);
+router.use('/', influencerRoutes);
 
 export default router;

@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../../config/database.js';
+import AdCampaignState from './AdCampaignState.js';
 
 const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     id: {
@@ -52,7 +53,7 @@ const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     tableName: 'ad_campaign_igb_account_user',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    updatedAt: 'updated_at'
 });
 
 AdCampaignIgbAccountUser.associate = (models) => {
@@ -62,7 +63,7 @@ AdCampaignIgbAccountUser.associate = (models) => {
     });
     
     AdCampaignIgbAccountUser.belongsTo(models.AdCampaignState, {
-        foreignKey: 'ad_campaign_id',
+        foreignKey: 'ad_campaign_state_id',
         as: 'ad_campaign_state'
     });
 }
