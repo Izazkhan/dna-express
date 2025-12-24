@@ -29,6 +29,13 @@ export class InfluencerService {
                         AND ac.user_id = ${userId}
                     )
                 )
+                AND (
+                    ${req.query.search ? '' : '1=1'}
+                    AND (
+                        lower("IgbAccount".username) like lower('%${req.query.search || ''}%')
+                        OR lower("IgbAccount".name) like lower('%${req.query.search || ''}%')
+                    )
+                )
             `)
         });
 
