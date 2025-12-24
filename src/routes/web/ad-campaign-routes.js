@@ -6,7 +6,6 @@ import ProposalsController from '../../app/controllers/web/proposals-controller.
 const router = express.Router();
 
 router.post('/', validate(validateCreateCampaign), AdCampaignsController.create);
-router.put('/:id', validate(validateUpdateCampaign), AdCampaignsController.update);
 router.get('/', AdCampaignsController.getAll);
 router.get('/options', AdCampaignsController.options);
 router.get('/edit/:id', AdCampaignsController.getForEditPage);
@@ -17,6 +16,7 @@ router.get('/with-rejected-proposals', AdCampaignsController.withRejectedProposa
 router.get('/with-completed-proposals', AdCampaignsController.withCompletedProposals);
 
 router.get('/:id', AdCampaignsController.get);
+router.put('/:id', validate(validateUpdateCampaign), AdCampaignsController.update);
 
 // Proposals related to a campaign
 router.get('/:id/proposals/active', ProposalsController.active);
