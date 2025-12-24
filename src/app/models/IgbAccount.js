@@ -106,6 +106,11 @@ IgbAccount.associate = (models) => {
         foreignKey: 'igb_account_id',
         as: 'matches'
     });
+    
+    IgbAccount.hasMany(models.AdCampaignIgbAccountUser, {
+        foreignKey: 'igb_account_id',
+        as: 'proposals'
+    });
 };
 
 

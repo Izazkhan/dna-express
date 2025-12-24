@@ -7,5 +7,7 @@ const router = express.Router();
 router.get('/influencers', InfluencersController.list);
 router.get('/influencers/accepted', InfluencersController.accepted);
 router.get('/influencers/active', InfluencersController.active);
+router.get('/influencers/rejected', InfluencersController.rejected);
+router.get('/influencers/archived', InfluencersController.archived);
 
 export default router;

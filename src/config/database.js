@@ -10,13 +10,12 @@ export const sequelize = new Sequelize(
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
-        // port: process.env.DB_PORT,
         host: process.env.DB_HOST,
-        // password: process.env.DB_PASSWORD,
-
         dialect: 'postgres',
         ssl: false,
-        clientMinMessages: 'notice',
+        dialectOptions: {
+            clientMinMessages: 'notice'
+        }
     });
 
 export const connectDB = async () => {

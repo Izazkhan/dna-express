@@ -77,6 +77,46 @@ class AdCampaignsController {
         }
         res.json({ data: result });
     })
+
+    withActiveProposals = asyncHandler(async (req, res) => {
+        try {
+            const result = await this.service.fetchCampaignsWithProposalScope(req, 'hasActiveProposals');
+            return res.status(200).json(new ApiResponse('message', result));
+        } catch (error) {
+            console.error('Error fetching campaigns with pagination:', error);
+            return res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
+        }
+    })
+    
+    withAcceptedProposals = asyncHandler(async (req, res) => {
+        try {
+            const result = await this.service.fetchCampaignsWithProposalScope(req, 'hasAcceptedProposals');
+            return res.status(200).json(new ApiResponse('Campaign with accepted proposals', result));
+        } catch (error) {
+            console.error('Error fetching campaigns with pagination:', error);
+            return res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
+        }
+    })
+    
+    withRejectedProposals = asyncHandler(async (req, res) => {
+        try {
+            const result = await this.service.fetchCampaignsWithProposalScope(req, 'hasRejectedProposals');
+            return res.status(200).json(new ApiResponse('Campaign with rejected proposals', result));
+        } catch (error) {
+            console.error('Error fetching campaigns with pagination:', error);
+            return res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
+        }
+    })
+    
+    withCompletedProposals = asyncHandler(async (req, res) => {
+        try {
+            const result = await this.service.fetchCampaignsWithProposalScope(req, 'hasCompletedProposals');
+            return res.status(200).json(new ApiResponse('Campaign with completed proposals', result));
+        } catch (error) {
+            console.error('Error fetching campaigns with pagination:', error);
+            return res.status(500).json(new ApiResponse('An error occurred while fetching campaigns.', null, false));
+        }
+    })
 }
 
 export default new AdCampaignsController();

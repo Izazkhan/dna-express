@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, literal, Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import AdCampaignState from './AdCampaignState.js';
 
@@ -53,7 +53,31 @@ const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     tableName: 'ad_campaign_igb_account_user',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    scopes: {
+        withActiveState: {
+            where: literal(`(
+                ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered') 
+                AND ad_campaign_state_id < (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+            )`)
+        },
+        withAcceptedState: {
+            where: literal(`(
+                ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'accepted') 
+            )`)
+        },
+        withRejectedState: {
+            where: literal(`(
+                ad_campaign_state_id <= (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                AND rejected = true
+            )`)
+        },
+        withCompletedState: {
+            where: literal(`(
+                ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+            )`)
+        },
+    }
 });
 
 AdCampaignIgbAccountUser.associate = (models) => {
@@ -61,10 +85,15 @@ AdCampaignIgbAccountUser.associate = (models) => {
         foreignKey: 'ad_campaign_id',
         as: 'ad_campaign'
     });
-    
+
     AdCampaignIgbAccountUser.belongsTo(models.AdCampaignState, {
         foreignKey: 'ad_campaign_state_id',
         as: 'ad_campaign_state'
+    });
+
+    AdCampaignIgbAccountUser.belongsTo(models.IgbAccount, {
+        foreignKey: 'igb_account_id',
+        as: 'igb_account'
     });
 }
 

@@ -1,10 +1,12 @@
 import { paginate } from "../../../utils/pagination.js";
 import AdCampaignLocation from "../../models/AdCampaignLocation.js";
-import models from "../../models/index.js";
 import { sequelize } from "../../../config/database.js";
 import AdCampaignDemographicAgeRanges from "../../models/AdCampaignDemographicAgeRanges.js";
-
-const { AdCampaign, AdCampaignDemographic, User } = models;
+import { literal, Op } from "sequelize";
+import AdCampaignState from "../../models/AdCampaignState.js";
+import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
+import AdCampaignDemographic from "../../models/AdCampaignDemographic.js";
+import AdCampaign from "../../models/AdCampaign.js";
 
 class AdCampaignService {
 
@@ -200,7 +202,7 @@ class AdCampaignService {
     }
 
     async getAllWithSimplePagination(req) {
-        const { limit, offset } = paginate(req.query);
+        const { pagesize, offset } = paginate(req.query);
         let campaigns = await AdCampaign.findAll({
             where: {
                 user_id: req.user.id
@@ -213,13 +215,33 @@ class AdCampaignService {
                 model: AdCampaignLocation, as: 'locations',
                 include: ['city', 'state', 'country']
             }],
-            limit,
+            limit: pagesize,
             offset,
             order: [['created_at', 'DESC']]
         });
         campaigns = this.transformCampaignsResponseData(campaigns);
         return {
             campaigns: campaigns
+        }
+    }
+
+    async fetchCampaignsWithProposalScope(req, proposalScope) {
+        const { pagesize, offset } = paginate(req.query);
+
+        let { rows, count } = await AdCampaign
+            .scope(['openCampaigns', proposalScope])
+            .findAndCountAll({
+                where: {
+                    user_id: req.user.id
+                },
+                attributes: ['id', 'name', 'created_at'],
+                limit: pagesize,
+                offset,
+                order: [['created_at', 'DESC']]
+            });
+        return {
+            campaigns: rows,
+            count
         }
     }
 

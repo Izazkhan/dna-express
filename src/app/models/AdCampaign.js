@@ -1,5 +1,5 @@
 // models/AdCampaign.js
-import { DataTypes } from 'sequelize';
+import { DataTypes, literal, Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import User from './User.js';
 
@@ -170,6 +170,70 @@ const AdCampaign = sequelize.define('AdCampaign', {
     scopes: {
         isMatching: {
             where: { is_matching: true }
+        },
+        openCampaigns: {
+            where: {
+                publish_until: {
+                    [Op.or]: [
+                        { [Op.gte]: new Date() },
+                        { [Op.eq]: null }
+                    ]
+                }
+            },
+        },
+        hasActiveProposals: {
+            where: {
+                [Op.and]: literal(`
+                    EXISTS (
+                        SELECT 1
+                        FROM ad_campaign_igb_account_user p
+                        WHERE p.ad_campaign_id = "AdCampaign"."id"
+                        AND p.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered')
+                        AND p.ad_campaign_state_id < (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                        LIMIT 1
+                    )
+                `)
+            }
+        },
+        hasAcceptedProposals: {
+            where: {
+                [Op.and]: literal(`
+                    EXISTS (
+                        SELECT 1
+                        FROM ad_campaign_igb_account_user p
+                        WHERE p.ad_campaign_id = "AdCampaign"."id"
+                        AND p.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                        LIMIT 1
+                    )
+                `)
+            }
+        },
+        hasRejectedProposals: {
+            where: {
+                [Op.and]: literal(`
+                    EXISTS (
+                        SELECT 1
+                        FROM ad_campaign_igb_account_user p
+                        WHERE p.ad_campaign_id = "AdCampaign"."id"
+                        AND p.rejected = true
+                        AND p.ad_campaign_state_id <= (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                        LIMIT 1
+                    )
+                `)
+            }
+        },
+        hasCompletedProposals: {
+            where: {
+                [Op.and]: literal(`
+                    EXISTS (
+                        SELECT 1
+                        FROM ad_campaign_igb_account_user p
+                        WHERE p.ad_campaign_id = "AdCampaign"."id"
+                        AND p.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                        LIMIT 1
+                    )
+                `)
+            }
         }
     }
 });
@@ -195,9 +259,14 @@ AdCampaign.associate = (models) => {
         as: 'matches'
     });
 
-    AdCampaign.hasOne(models.AdCampaignIgbAccountUser, {
+    // AdCampaign.hasOne(models.AdCampaignIgbAccountUser, {
+    //     foreignKey: 'ad_campaign_id',
+    //     as: 'match',
+    // });
+
+    AdCampaign.hasMany(models.AdCampaignIgbAccountUser, {
         foreignKey: 'ad_campaign_id',
-        as: 'match',
+        as: 'proposals',
     });
 
     AdCampaign.belongsTo(models.AdCampaignDeliverable, {
