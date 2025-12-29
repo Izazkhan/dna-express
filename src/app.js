@@ -47,8 +47,8 @@ app.use('/api/app', appRoutes);
 app.use('/api/web', webRoutes);
 
 cron.schedule('* * * * *', async () => {
-  console.log('Running task every minute');
-  await MatcherService.run();
+    console.log('Running task every minute');
+    await MatcherService.run();
 });
 
 

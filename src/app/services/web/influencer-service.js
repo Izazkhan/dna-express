@@ -1,13 +1,44 @@
-import { literal } from "sequelize";
+import { literal, Op } from "sequelize";
 import IgbAccount from "../../models/IgbAccount.js";
 import IgProfileAverageInsights from "../../models/IgProfileAverageInsights.js";
 import { paginate } from "../../../utils/pagination.js";
+import { sequelize } from "../../../config/database.js";
 
 export class InfluencerService {
+    /* List influencers associated with the user's ad campaigns */
     async list(req) {
         const { page, pagesize, offset } = paginate(req.query);
         const userId = Number(req.user.id);
         if (isNaN(userId)) throw new Error('Invalid user id');
+
+        // 1. Campaign check
+        const whereConditions = [
+            sequelize.literal(`
+                EXISTS (
+                    SELECT 1 FROM ad_campaign_igb_account_user AS matches
+                    WHERE matches.igb_account_id = "IgbAccount".id
+                    AND matches.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered')
+                    AND EXISTS (
+                        SELECT 1 FROM ad_campaigns AS ac
+                        WHERE ac.id = matches.ad_campaign_id
+                        AND ac.user_id = :userId
+                    )
+                )
+            `)
+        ];
+
+        const replacements = { userId };
+
+        // 2. ONLY add the search logic if a term actually exists
+        if (req.query.search && req.query.search.trim() !== '') {
+            whereConditions.push(
+                sequelize.literal(`(
+                    lower("IgbAccount".username) LIKE :search 
+                    OR lower("IgbAccount".name) LIKE :search
+                )`)
+            );
+            replacements.search = `${req.query.search}%`;
+        }
 
         let { rows, count } = await IgbAccount.findAndCountAll({
             limit: pagesize,
@@ -18,25 +49,10 @@ export class InfluencerService {
                     as: 'profile_average_insights',
                 }
             ],
-            where: literal(`
-                EXISTS (
-                    SELECT 1 FROM ad_campaign_igb_account_user AS matches
-                    where matches.igb_account_id = "IgbAccount".id
-                    AND matches.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered')
-                    AND EXISTS (
-                        SELECT 1 FROM ad_campaigns AS ac
-                        where ac.id = matches.ad_campaign_id
-                        AND ac.user_id = ${userId}
-                    )
-                )
-                AND (
-                    ${req.query.search ? '' : '1=1'}
-                    AND (
-                        lower("IgbAccount".username) like lower('%${req.query.search || ''}%')
-                        OR lower("IgbAccount".name) like lower('%${req.query.search || ''}%')
-                    )
-                )
-            `)
+            where: {
+                [Op.and]: whereConditions
+            },
+            replacements: replacements
         });
 
         return {

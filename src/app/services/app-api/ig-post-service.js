@@ -1,11 +1,21 @@
-import { Op } from "sequelize";
-import models from "../../models/index.js";
-
-const { IgPost } = models;
+import { literal } from "sequelize";
+import { paginate } from "../../../utils/pagination.js";
+import IgbAccount from "../../models/IgbAccount.js";
+import IgPost from "../../models/IgPost.js";
 
 class IgPostService {
     async getTopPosts(req) {
-        return await IgPost.findAll();
+        let { pagesize, offset } = paginate(req.query);
+        return await IgPost.findAll({
+            limit: pagesize,
+            offset,
+            include: [{
+                model: IgbAccount,
+                as: 'igb_account',
+                where: { instagram_account_id: req.params.igb_account_id },
+                attributes: []
+            }]
+        });
     }
 }
 
