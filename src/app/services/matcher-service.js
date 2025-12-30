@@ -1,4 +1,3 @@
-import { Op } from 'sequelize';
 import models from '../models/index.js';
 import { sequelize } from '../../config/database.js';
 
@@ -17,58 +16,34 @@ class MatcherService {
     constructor() { }
 
     /**
-     * Runs matcher for all active campaigns
+     * Entry point for the Worker.
+     * Matches a single campaign by ID.
      */
-    async run() {
-        try {
-            // Step 1: Fetch active campaigns
-            const now = new Date();
-            const openCampaigns = await AdCampaign.findAll({
-                where: {
-                    publish_from: { [Op.lte]: now },
-                    [Op.or]: [
-                        { publish_until: null },
-                        { publish_until: { [Op.gte]: now } }
-                    ],
-                    matcher_run_at: null,
-                    // published: true,
-                    archived: false
-                },
-                include: [
-                    {
-                        model: AdCampaignDemographic,
-                        as: 'demographics',
-                        required: false,
-                    },
-                    {
-                        model: AdCampaignEngagementRange,
-                        as: 'engagement_rate',
-                        required: false,
-                    },
-                    'locations'
-                ],
-            });
+    async processCampaignById(campaignId) {
+        console.log("[Matcher] Starting matching for Campaign ID:", campaignId);
+        const campaign = await AdCampaign.findByPk(campaignId, {
+            include: [
+                { model: AdCampaignDemographic, as: 'demographics' },
+                { model: AdCampaignEngagementRange, as: 'engagement_rate' },
+                'locations'
+            ],
+        });
 
-            let totalMatches = 0;
-            for (const campaign of openCampaigns) {
-                const matches = await this.matchCampaign(campaign);
-                campaign.matcher_run_at = new Date();
-                if (matches.length > 0) {
-                    campaign.is_matching = true;
-                }
-                await campaign.save();
-                totalMatches += matches;
-            }
-            console.log(`New matches: ${totalMatches}`)
-            return {
-                success: true,
-                newMatches: totalMatches,
-                totalOpenCampaigns: openCampaigns.length
-            }
-        } catch (err) {
-            console.error('❌ Error in MatcherService.run:', err);
-            throw err;
+        if (!campaign) {
+            console.error(`[Matcher] Campaign ${campaignId} not found.`);
+            return;
         }
+
+        const matchCount = await this.matchCampaign(campaign);
+
+        // Update state
+        campaign.matcher_run_at = new Date();
+        if (matchCount > 0) {
+            campaign.is_matching = true;
+        }
+        await campaign.save();
+
+        return matchCount;
     }
 
     /**
