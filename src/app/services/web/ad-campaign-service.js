@@ -38,7 +38,6 @@ class AdCampaignService {
             await campaign.update(transformed, { transaction: t });
 
             // Handle demographics update
-            console.log('transformed', transformed.demographics);
             if (transformed.demographics) {
                 const oldDemographic = await AdCampaignDemographic.findOne({
                     where: { ad_campaign_id: campaignId },

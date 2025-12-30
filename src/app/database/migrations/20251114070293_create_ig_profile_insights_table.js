@@ -12,6 +12,8 @@ module.exports = {
                 created_at TIMESTAMPTZ DEFAULT NOW(),
                 updated_at TIMESTAMPTZ DEFAULT NOW()
             )
+
+            CREATE INDEX IF NOT EXISTS idx_followers_count ON ig_profile_insights(followers_count);
         `);
     },
     async down(queryInterface, Sequelize) {

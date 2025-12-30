@@ -22,6 +22,8 @@ module.exports = {
 
             UNIQUE (username, instagram_account_id)
         );
+
+        CREATE INDEX IF NOT EXISTS idx_is_active ON igb_accounts(is_active);
     `);
     },
 

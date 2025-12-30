@@ -77,8 +77,7 @@ class MatcherService {
      */
     async matchCampaign(campaign) {
 
-        // Find new matches (eligible igb accounts)
-        const eligibleAccounts = await sequelize.query(`
+        let sql = `
             SELECT 
                 ia.id AS igb_account_id,
                 ia.username,
@@ -88,56 +87,67 @@ class MatcherService {
                 pai.followers_count,
                 ldi.percent_male,
                 ldi.percent_female,
-                lacc_sum.audience_value
-                
+                -- Aggregate directly at the top level
+                SUM(lacc.value) AS audience_value 
+                            
             FROM igb_accounts AS ia
+            
+            -- INNER JOINs ensure we only get accounts with existing insights
             JOIN ig_profile_average_insights AS pai ON pai.igb_account_id = ia.id
-            LEFT JOIN ig_latest_demographic_insights as ldi ON ldi.igb_account_id = ia.id
-                
-            JOIN (
-                SELECT igb_account_id, SUM(value) AS audience_value, data_state_id,
-                CASE
-                    WHEN :city_id IS NOT NULL
-                    THEN data_city_id
-                    ELSE NULL
-                END AS data_city_id
-                FROM ig_latest_audience_city_counts AS lacc
-                WHERE (
-                    (
-                        :city_id IS NOT NULL
-                        AND data_city_id = :city_id
-                    )
-                    OR (
-                        :city_id IS NULL
-                        AND data_state_id = :state_id
-                    )
-                )
-                GROUP BY igb_account_id, data_state_id, 
-                CASE
-                    WHEN :city_id IS NOT NULL
-                    THEN data_city_id
-                    ELSE NULL
-                END
-            ) lacc_sum ON lacc_sum.igb_account_id = ia.id
-                
-            WHERE ia.is_active = true 
-            AND pai.engagement BETWEEN :lower_engagement AND :upper_engagement
-            AND pai.likes >= :likes_min
-            AND pai.followers_count >= :followers_min
-            AND (
-                :use_gender = false
-                OR (
-                    ldi.percent_male >= :percent_male
+            
+            -- LEFT JOIN ensures we don't lose accounts just because they lack demographic data
+            LEFT JOIN ig_latest_demographic_insights AS ldi ON ldi.igb_account_id = ia.id
+            
+            -- Flattened Join: Filter directly on this table
+            JOIN ig_latest_audience_city_counts AS lacc
+                ON lacc.igb_account_id = ia.id
+            
+            LEFT JOIN ad_campaign_igb_account_user AS acu 
+                ON acu.igb_account_id = ia.id AND acu.ad_campaign_id = :campaign_id
+            
+            WHERE ia.is_active = true
+        `;
+
+        if (campaign?.locations?.[0]?.data_city_id) {
+            // 1. Location Filtering (City)
+            sql += ` AND lacc.data_city_id = :city_id`;
+        } else {
+            // Fallback to State if City not provided
+            sql += ` AND lacc.data_state_id = :state_id`;
+        }
+
+        // 2. Engagement & Metrics Filtering
+        sql += `
+                AND pai.engagement BETWEEN :lower_engagement AND :upper_engagement
+                AND pai.likes >= :likes_min
+                AND pai.followers_count >= :followers_min
+            `;
+
+        if (campaign.demographics?.use_gender === true) {
+            // 3. Gender Filtering
+            sql += `
+                    AND ldi.percent_male >= :percent_male
                     AND ldi.percent_female >= :percent_female
-                )
-            )
-            AND NOT EXISTS (
-                SELECT 1
-                FROM ad_campaign_igb_account_user acu
-                WHERE acu.igb_account_id = ia.id
-                AND acu.ad_campaign_id = :campaign_id
-            )
-            `, {
+                `;
+        }
+
+        sql += `
+                AND acu.igb_account_id IS NULL
+                -- 5. Required grouping for aggregate SUM
+                GROUP BY 
+                    ia.id, 
+                    ia.username, 
+                    ia.name,
+                `;
+        if (campaign?.locations?.[0]?.data_city_id) {
+            sql += ` lacc.data_city_id,`;
+        } else {
+            sql += ` lacc.data_state_id,`;
+        }
+        // make it unique for account (avoid duplicate rows)
+        sql += ` pai.id, ldi.id`;
+        // Find new matches (eligible igb accounts)
+        const eligibleAccounts = await sequelize.query(sql, {
             replacements: {
                 lower_engagement: campaign.engagement_rate?.lower,
                 upper_engagement: campaign.engagement_rate?.upper,
