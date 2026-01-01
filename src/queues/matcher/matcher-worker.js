@@ -20,7 +20,7 @@ class MatcherWorker {
 
             try {
                 // Call your class-based service
-                const result = await MatcherService.processCampaignById(campaignId);
+                const result = await MatcherService.perocessCampaignById(campaignId);
 
                 return {
                     success: true,
@@ -34,9 +34,7 @@ class MatcherWorker {
             }
         }, {
             connection: redisConnection,
-            concurrency: 5, // Process 5 campaigns simultaneously per worker instance
-            removeOnComplete: { count: 20 }, // Keep last 20 logs
-            removeOnFail: { count: 500 }
+            concurrency: 5, // Process up to 5 jobs simultaneously
         });
 
         this.listenForEvents();
@@ -44,20 +42,23 @@ class MatcherWorker {
     }
 
     listenForEvents() {
-        // THIS IS CRITICAL: If this doesn't trigger, the worker isn't connected
+        
         this.worker.on('ready', () => {
-            console.log('✅ Worker is officially connected to Redis');
+            console.log('✅ Worker is connected to Redis');
         });
 
         this.worker.on('completed', (job, returnvalue) => {
+            // TODO: Store in database for admin review
             console.log(`✅ Job ${job.id} completed: ${returnvalue.message}`);
         });
 
         this.worker.on('failed', (job, err) => {
+            // TODO: Store in database for admin review
             console.error(`❌ Job ${job.id} failed: ${err.message}`);
         });
 
         this.worker.on('error', (err) => {
+            // TODO: Store in database for admin review
             console.error('🔥 Critical Worker Error:', err);
         });
     }
