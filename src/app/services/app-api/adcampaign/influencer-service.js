@@ -93,7 +93,7 @@ class InfluencerService {
         if (!account) {
             throw new ApiError(404, 'Igb account not found');
         }
-        let completedId = await AdCampaignState.completedId();
+        let completedId = await AdCampaignState.matchedId();
         let campaigns = await AdCampaign.scope('isMatching').findAll({
             include: [
                 {
@@ -102,6 +102,7 @@ class InfluencerService {
                     where: {
                         igb_account_id: account.id,
                         ad_campaign_state_id: {
+                            // on feed we will show all campaigns we'are matched or engaged with
                             [Op.lte]: completedId
                         }
                     },

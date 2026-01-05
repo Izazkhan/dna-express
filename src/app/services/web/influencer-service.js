@@ -17,7 +17,7 @@ export class InfluencerService {
                 EXISTS (
                     SELECT 1 FROM ad_campaign_igb_account_user AS matches
                     WHERE matches.igb_account_id = "IgbAccount".id
-                    AND matches.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered')
+                    AND matches.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'matched')
                     AND EXISTS (
                         SELECT 1 FROM ad_campaigns AS ac
                         WHERE ac.id = matches.ad_campaign_id

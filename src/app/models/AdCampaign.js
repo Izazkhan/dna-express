@@ -259,10 +259,13 @@ AdCampaign.associate = (models) => {
         as: 'matches'
     });
 
-    // AdCampaign.hasOne(models.AdCampaignIgbAccountUser, {
-    //     foreignKey: 'ad_campaign_id',
-    //     as: 'match',
-    // });
+    AdCampaign.hasOne(models.AdCampaignIgbAccountUser, {
+        foreignKey: 'ad_campaign_id',
+        as: 'match',
+        where: {
+            ad_campaign_state_id: 1
+        }
+    });
 
     AdCampaign.hasMany(models.AdCampaignIgbAccountUser, {
         foreignKey: 'ad_campaign_id',

@@ -20,7 +20,7 @@ class MatcherWorker {
 
             try {
                 // Call your class-based service
-                const result = await MatcherService.perocessCampaignById(campaignId);
+                const result = await MatcherService.processCampaignById(campaignId);
 
                 return {
                     success: true,
