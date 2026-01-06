@@ -225,13 +225,14 @@ class AdCampaignService {
     }
 
     async fetchCampaignsWithProposalScope(req, proposalScope) {
-        const { pagesize, offset } = paginate(req.query);
+        const { pagesize, offset, page } = paginate(req.query);
 
         let { rows, count } = await AdCampaign
             .scope(['openCampaigns', proposalScope])
             .findAndCountAll({
                 where: {
-                    user_id: req.user.id
+                    user_id: req.user.id,
+                    name: { [Op.iLike]: `${req.query.search}%` }
                 },
                 attributes: ['id', 'name', 'created_at'],
                 limit: pagesize,
@@ -240,7 +241,12 @@ class AdCampaignService {
             });
         return {
             campaigns: rows,
-            count
+            pagination: {
+                page,
+                pagesize,
+                total: count,
+                totalPages: Math.ceil(count / pagesize)
+            }
         }
     }
 
