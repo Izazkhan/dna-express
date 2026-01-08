@@ -6,163 +6,121 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   ai-review:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     if: github.event.pull_request.draft == false
 
     steps:
-      # STEP 1: Checkout
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # STEP 2: Generate Diff
       - name: Generate PR Diff
         id: diff
         run: |
+          # Fetch the base branch to ensure git can see it
           git fetch origin ${{ github.base_ref }}
+
           git diff origin/${{ github.base_ref }} HEAD --unified=5 > diff.txt
-          
+
+          # Stats for the final comment
           ADDED=$(git diff --stat origin/${{ github.base_ref }} HEAD | tail -1 | grep -o '[0-9]* insertion' | grep -o '[0-9]*' || echo "0")
           DELETED=$(git diff --stat origin/${{ github.base_ref }} HEAD | tail -1 | grep -o '[0-9]* deletion' | grep -o '[0-9]*' || echo "0")
           FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | wc -l)
-          
+
           echo "added=$ADDED" >> $GITHUB_OUTPUT
           echo "deleted=$DELETED" >> $GITHUB_OUTPUT
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
-      # STEP 3: Prepare Review Request - FIXED!
       - name: Prepare Review Request
         id: prepare
         run: |
-          # Read diff - FIXED VARIABLE NAME!
+          # Read diff (max 6000 chars to avoid payload limits)
           DIFF=$(cat diff.txt | head -c 6000)
-          
-          # Create prompt - FIXED: Using steps.diff.outputs.files
+
           cat > prompt.txt << EOF
           PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
           Repository: ${{ github.repository }}
           Author: ${{ github.event.pull_request.user.login }}
-          Changed files: ${{ steps.diff.outputs.files }}
-          
-          Code changes:
+
+          Please review the following code changes for security, logic errors, and performance:
           $DIFF
           EOF
-          
-          # Create JSON payload - FIXED ESCAPING!
-          cat > request.json << 'EOF'
+
+          ESCAPED_PROMPT=$(cat prompt.txt | jq -sR .)
+          cat > request.json <<EOF
           {
             "model": "deepseek-reviewer",
-            "prompt": "$(cat prompt.txt | jq -sR . | sed 's/^"//;s/"$//')",
-            "stream": false,
+            "prompt": $ESCAPED_PROMPT,
+            "stream": true,
             "options": {
-              "temperature": 0,
-              "top_p": 0.1,
+              "temperature": 0.1,
               "num_predict": 2048
             }
           }
           EOF
-          
-          # Actually escape the prompt properly
-          ESCAPED_PROMPT=$(cat prompt.txt | jq -sR .)
-          sed -i "s|\"\$(cat prompt.txt | jq -sR . | sed 's/^\"//;s/\"\$//')\"|${ESCAPED_PROMPT}|" request.json
-          
-          echo "Payload ready. Diff size: $(wc -l < diff.txt) lines"
 
-      # STEP 4: Call Ollama API
       - name: Call Ollama API
         id: review
         env:
           OLLAMA_URL: ${{ secrets.OLLAMA_URL }}
         run: |
-          echo "Calling Ollama at $OLLAMA_URL..."
-          
-          RESPONSE=$(curl -s -X POST "$OLLAMA_URL/api/generate" \
+          echo "Calling AI Model..."
+          touch review.md
+
+          curl -s -N -X POST "$OLLAMA_URL/api/generate" \
             -H "Content-Type: application/json" \
             -d "@request.json" \
-            --max-time 180 \
-            --fail-with-body)
-          
-          if [ $? -eq 0 ]; then
-            REVIEW=$(echo "$RESPONSE" | jq -r '.response')
-            echo "$REVIEW" > review.md
-            
-            TOKENS=$(echo "$RESPONSE" | jq '.eval_count // 0')
-            echo "tokens=$TOKENS" >> $GITHUB_OUTPUT
-            
-            echo "✅ Review generated successfully"
-          else
-            echo "❌ Failed to get review"
-            echo "Response: $RESPONSE"
-            exit 1
-          fi
+            --max-time 300 | while IFS= read -r line; do
+            echo "$line" | jq -r '.response // empty' >> review.md
+          done
 
-      # STEP 5: Post Review to PR
       - name: Post Review to PR
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            if (!fs.existsSync('review.md')) return;
             const reviewContent = fs.readFileSync('review.md', 'utf8');
-            
+            if (!reviewContent.trim()) return;
+
             const commentBody = `
             ## 🤖 AI Code Review
-            *Powered by DeepSeek-R1 via Cloudflare Tunnel*
-            
             ${reviewContent}
-            
+
             ---
             📊 **Stats**: +${{ steps.diff.outputs.added }}/-${{ steps.diff.outputs.deleted }} in ${{ steps.diff.outputs.files }} files
-            🧠 **Model**: deepseek-reviewer
-            ⚡ **Tokens**: ${{ steps.review.outputs.tokens || 'N/A' }}
-            
-            *Note: This is an automated review. Please verify critical issues.*
             `;
-            
-            // Delete previous AI comments
-            try {
-              const comments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-              });
-              
-              for (const comment of comments.data) {
-                if (comment.user.type === 'Bot' && comment.body.includes('AI Code Review')) {
-                  await github.rest.issues.deleteComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: comment.id,
-                  });
-                }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            for (const comment of comments) {
+              if (comment.body.includes('## 🤖 AI Code Review')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
               }
-            } catch (error) {
-              console.log('No previous comments to delete');
             }
-            
-            // Post new comment
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body: commentBody
             });
-            
-            console.log('✅ Review posted to PR');
 
-      # STEP 6: Handle Failure
       - name: Handle Failure
         if: failure()
-        run: |
-          echo "⚠️ AI review failed. Possible reasons:"
-          echo "1. Ollama tunnel not running"
-          echo "2. Model not loaded"
-          echo "3. Network issues"
-          echo "4. PR too large"
-          echo ""
-          echo "Check tunnel: cloudflared tunnel list"
-          echo "Check Ollama: curl ${{ secrets.OLLAMA_URL }}/api/tags"
+        run: echo "⚠️ AI Review Failed. Check OLLAMA_URL and Tunnel status."
