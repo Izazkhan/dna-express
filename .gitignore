@@ -3,7 +3,7 @@ node_modules/
 # Environment variables
 .secrets
 .actrc
-.event.json
+event.json
 .env
 .env.local
 .env.development
