@@ -8,7 +8,8 @@ class AgreementsController {
 
     index = asyncHandler(async (req, res) => {
         let result = await this.service.index(req);
-        res.status(200).json({ message: 'Agreements list', result });
+        // res.status(200).json({ message: 'Agreements list', result });
+        res.status(200).json({ message: 'Agreements list' });
     })
 }
 
