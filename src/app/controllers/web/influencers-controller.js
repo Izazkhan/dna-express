@@ -16,7 +16,7 @@ export class InfluencersController {
         let result = await this.service.accepted(req);
         res.status(200).json(new ApiResponse('Influencers list (accepted)', result));
     })
-    
+
     active = asyncHandler(async (req, res) => {
         let result = await this.service.active(req);
         res.status(200).json(new ApiResponse('Influencers list (active)', result));
@@ -30,6 +30,11 @@ export class InfluencersController {
     archived = asyncHandler(async (req, res) => {
         let result = await this.service.archived(req);
         res.status(200).json(new ApiResponse('Influencers list (archived)', result));
+    })
+
+    posts = asyncHandler(async (req, res) => {
+        let result = await this.service.media(req, req.params.igb_account_id);
+        res.status(200).json(new ApiResponse('Infleuncer Posts', result));
     })
 }
 

@@ -3,6 +3,8 @@ import IgbAccount from "../../models/IgbAccount.js";
 import IgProfileAverageInsights from "../../models/IgProfileAverageInsights.js";
 import { paginate } from "../../../utils/pagination.js";
 import { sequelize } from "../../../config/database.js";
+import IgPost from "../../models/IgPost.js";
+import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
 
 export class InfluencerService {
     /* List influencers associated with the user's ad campaigns */
@@ -64,6 +66,37 @@ export class InfluencerService {
                 totalPages: Math.ceil(count / pagesize)
             }
         };
+    }
+
+    async media(req, igbAccountId) {
+        const { page, pagesize, offset } = paginate(req.query);
+        let match = await AdCampaignIgbAccountUser.findOne({
+            where: {
+                igb_account_id: igbAccountId
+            }
+        })
+
+        if (!match) {
+            return "Failed to find campaign match with infleuncer"
+        }
+
+        let { rows, count } = await IgPost.findAndCountAll({
+            offset,
+            limit: pagesize,
+            where: {
+                igb_account_id: igbAccountId
+            },
+            order: [['created_at', 'DESC']]
+        })
+        return {
+            posts: rows,
+            pagination: {
+                page,
+                pagesize,
+                total: count,
+                totalPages: Math.ceil(count / pagesize)
+            }
+        }
     }
 }
 
