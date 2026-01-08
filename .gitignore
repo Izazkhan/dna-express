@@ -1,5 +1,11 @@
 # Node modules
 node_modules/
+
+#Git related files
+.secrets
+.actrc
+event.json
+
 # Environment variables
 .env
 .env.local

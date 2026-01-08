@@ -25,7 +25,7 @@ jobs:
         id: diff
         run: |
           # Fetch the base branch to ensure git can see it
-          git fetch origin ${{ github.base_ref }}
+          git fetch origin ${{ github.base_ref }} --depth=1
 
           git diff origin/${{ github.base_ref }} HEAD --unified=5 > diff.txt
 
