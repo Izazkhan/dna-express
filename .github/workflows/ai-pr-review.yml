@@ -68,17 +68,31 @@ jobs:
       - name: Call Ollama API
         id: review
         env:
-          OLLAMA_URL: ${{ secrets.OLLAMA_URL }}
+          OLLAMA_URL: "https://ai-model.airocommerce.xyz"
         run: |
-          echo "Calling AI Model..."
-          touch review.md
+          # 1. Enable 'pipefail' so the step fails if curl fails
+          set -o pipefail
+          
+          echo "Testing connection to: $OLLAMA_URL"
+          
+          # 2. Add a connectivity check before the main call
+          curl -I -s --max-time 5 "$OLLAMA_URL/api/tags" || { echo "❌ Cannot reach Ollama URL"; exit 1; }
 
-          curl -s -N -X POST "$OLLAMA_URL/api/generate" \
+          echo "Calling AI Model..."
+          
+          # 3. Use -S (show errors) and -v (verbose) for debugging
+          # 4. Save to a temporary file first to ensure the loop doesn't mask errors
+          curl -v -f -s -N -X POST "$OLLAMA_URL/api/generate" \
             -H "Content-Type: application/json" \
             -d "@request.json" \
-            --max-time 300 | while IFS= read -r line; do
+            --max-time 1000 > raw_response.json
+          
+          # 5. Process the saved file
+          cat raw_response.json | while IFS= read -r line; do
             echo "$line" | jq -r '.response // empty' >> review.md
           done
+          
+          echo "✅ Review processing complete. File size: $(stat -c%s review.md)
 
       - name: Post Review to PR
         uses: actions/github-script@v7
