@@ -55,44 +55,56 @@ jobs:
           ESCAPED_PROMPT=$(cat prompt.txt | jq -sR .)
           cat > request.json <<EOF
           {
-            "model": "deepseek-reviewer",
-            "prompt": $ESCAPED_PROMPT,
-            "stream": true,
-            "options": {
-              "temperature": 0.1,
-              "num_predict": 2048
-            }
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are an expert code reviewer. Provide clear, actionable feedback on code quality, security, and best practices."
+              },
+              {
+                "role": "user",
+                "content": $ESCAPED_PROMPT
+              }
+            ],
+            "temperature": 0.3,
+            "max_tokens": 2048
           }
           EOF
 
-      - name: Call Ollama API
+      - name: Call Groq API
         id: review
         env:
-          OLLAMA_URL: "https://ai-model.airocommerce.xyz"
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           # 1. Enable 'pipefail' so the step fails if curl fails
           set -o pipefail
-          
-          echo "Testing connection to: $OLLAMA_URL"
-          
-          # 2. Add a connectivity check before the main call
-          curl -I -s --max-time 5 "$OLLAMA_URL/api/tags" || { echo "❌ Cannot reach Ollama URL"; exit 1; }
 
-          echo "Calling AI Model..."
-          
-          # 3. Use -S (show errors) and -v (verbose) for debugging
-          # 4. Save to a temporary file first to ensure the loop doesn't mask errors
-          curl -v -f -s -N -X POST "$OLLAMA_URL/api/generate" \
+          echo "Calling Groq API..."
+
+          RESPONSE=$(curl -s -X POST "https://api.groq.com/openai/v1/chat/completions" \
+            -H "Authorization: Bearer $GROQ_API_KEY" \
             -H "Content-Type: application/json" \
             -d "@request.json" \
-            --max-time 1000 > raw_response.json
-          
-          # 5. Process the saved file
-          cat raw_response.json | while IFS= read -r line; do
-            echo "$line" | jq -r '.response // empty' >> review.md
-          done
-          
-          echo "✅ Review processing complete. File size: $(stat -c%s review.md)
+            --max-time 60)
+
+          echo "Response received"
+
+          # Extract the review content
+          REVIEW=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+
+          if [ -n "$REVIEW" ]; then
+            echo "$REVIEW" > review.md
+            
+            # Extract token usage
+            TOKENS=$(echo "$RESPONSE" | jq '.usage.total_tokens // 0')
+            echo "tokens=$TOKENS" >> $GITHUB_OUTPUT
+            
+            echo "✅ Review generated successfully ($TOKENS tokens)"
+          else
+            echo "❌ Failed to get review"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
 
       - name: Post Review to PR
         uses: actions/github-script@v7
