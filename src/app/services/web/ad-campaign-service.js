@@ -7,6 +7,7 @@ import AdCampaignState from "../../models/AdCampaignState.js";
 import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
 import AdCampaignDemographic from "../../models/AdCampaignDemographic.js";
 import AdCampaign from "../../models/AdCampaign.js";
+import MatcherQueue from "../../../queues/matcher/matcher-queue.js";
 
 class AdCampaignService {
 
@@ -15,13 +16,16 @@ class AdCampaignService {
     async create({ body: data, user: authUser }) {
         data.user_id = authUser.id;
         const transformed = this.transformRequestData(data);
-        return await AdCampaign.create(transformed, {
+        let campaign = await AdCampaign.create(transformed, {
             include: [{
                 model: AdCampaignDemographic,
                 as: 'demographics',
                 include: 'age_range_ids'
             }, 'locations', 'user']
         });
+        // trigger event
+        await MatcherQueue.addJob(campaign.id);
+        return campaign;
     }
 
     async update({ params, body: data, user: authUser }) {
@@ -94,6 +98,7 @@ class AdCampaignService {
                 }, 'user'],
                 transaction: t
             });
+            await MatcherQueue.addJob(updatedCampaign.id);
             return this.transformCampaignResponseData(updatedCampaign);
         });
     }
