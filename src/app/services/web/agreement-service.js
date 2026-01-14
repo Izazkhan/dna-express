@@ -6,11 +6,16 @@ import IgbAccount from "../../models/IgbAccount.js";
 import IgProfileAverageInsights from "../../models/IgProfileAverageInsights.js";
 
 class AgreementService {
-    constructor() {
-        // Initialization code here
-    }
 
-    index = async (req) => {
+    index = async (req, type = 'active') => {
+        const isCompleted = type === 'completed';
+        const offeredId = await AdCampaignState.offeredId();
+        const completedId = await AdCampaignState.completedId();
+
+        const stateCondition = isCompleted
+            ? { [Op.gte]: completedId } // Completed
+            : { [Op.and]: [{ [Op.gte]: offeredId }, { [Op.lt]: completedId }] }; // Active
+
         let { rows, count } = await IgbAccount.findAndCountAll({
             distinct: true,
             include: [
@@ -19,13 +24,7 @@ class AgreementService {
                     as: 'matches',
                     attributes: [],
                     where: {
-                        // accepted
-                        ad_campaign_state_id: {
-                            [Op.and]: [
-                                { [Op.gte]: await AdCampaignState.offeredId() },
-                                { [Op.lt]: await AdCampaignState.completedId() },
-                            ]
-                        }
+                        ad_campaign_state_id: stateCondition
                     },
                     include: [{
                         model: AdCampaign,
@@ -34,7 +33,7 @@ class AgreementService {
                             publish_until: {
                                 [Op.or]: [
                                     { [Op.lte]: new Date() },
-                                    null
+                                    null // means always open
                                 ]
                             },
                             user_id: req.user.id,
@@ -42,7 +41,8 @@ class AgreementService {
                     }]
                 }
             ]
-        })
+        });
+
         return {
             agreements: rows,
             total: count
