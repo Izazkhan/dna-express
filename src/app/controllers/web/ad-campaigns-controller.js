@@ -35,11 +35,11 @@ class AdCampaignsController {
     })
 
     get = asyncHandler(async (req, res) => {
-        const campaign = await this.service.getWithDetail(req, req.params.id);
-        if (!campaign) {
+        const response = await this.service.getWithDetail(req, req.params.id);
+        if (!response) {
             return res.status(404).json({ message: "Campaign not found" });
         }
-        return res.status(200).json(new ApiResponse('message', campaign));
+        return res.status(200).json(new ApiResponse('Campaign with insights', response));
     })
     
     getForEditPage = asyncHandler(async (req, res) => {

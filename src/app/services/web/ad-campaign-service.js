@@ -2,7 +2,7 @@ import { paginate } from "../../../utils/pagination.js";
 import AdCampaignLocation from "../../models/AdCampaignLocation.js";
 import { sequelize } from "../../../config/database.js";
 import AdCampaignDemographicAgeRanges from "../../models/AdCampaignDemographicAgeRanges.js";
-import { literal, Op } from "sequelize";
+import { col, fn, literal, Op } from "sequelize";
 import AdCampaignState from "../../models/AdCampaignState.js";
 import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
 import AdCampaignDemographic from "../../models/AdCampaignDemographic.js";
@@ -142,16 +142,16 @@ class AdCampaignService {
             where: {
                 user_id: req.user.id
             },
-            include: [{
-                model: AdCampaignDemographic,
-                include: 'age_ranges',
-                as: 'demographics'
-            },
-            {
-                model: AdCampaignLocation, as: 'locations',
-                include: ['city', 'state', 'country']
-            }
-                , 'deliverable', 'engagement_rate'
+            include: [
+                {
+                    model: AdCampaignDemographic,
+                    include: 'age_ranges',
+                    as: 'demographics'
+                },
+                {
+                    model: AdCampaignLocation, as: 'locations',
+                    include: ['city', 'state', 'country']
+                }, 'deliverable', 'engagement_rate'
             ]
         });
 
@@ -159,7 +159,71 @@ class AdCampaignService {
             return null;
         }
 
-        return this.transformCampaignResponseData(campaign);
+        campaign = this.transformCampaignResponseData(campaign);
+        return {
+            campaign,
+            insights: await this.getCampaignInsights(id)
+        }
+    }
+
+    async getCampaignInsights(id) {
+        const [matchCounts] = await sequelize.query(`
+            SELECT COUNT(aiu.id) as count, aiu.ad_campaign_state_id, 
+            acs.name,
+            SUM(
+                CASE
+                    WHEN (
+                        aiu.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'matched') 
+                        AND aiu.viewed = true
+                    ) OR (aiu.ad_campaign_state_id > (SELECT id FROM ad_campaign_states WHERE slug = 'matched'))
+                    THEN 1
+                    ELSE 0
+                END
+            ) as viewed_count
+            FROM ad_campaign_igb_account_user aiu
+            JOIN ad_campaign_states acs on acs.id = aiu.ad_campaign_state_id
+            WHERE aiu.ad_campaign_id = :ad_campaign_id
+            GROUP BY aiu.ad_campaign_state_id, acs.name
+        `, {
+            replacements: {
+                ad_campaign_id: id
+            }
+        });
+
+        return matchCounts.reduce((acc, curr) => {
+            const name = curr.name.toLowerCase();
+            const count = parseInt(curr.count, 10);
+            const stateViews = parseInt(curr.viewed_count, 10);
+
+            // 1. Accumulate Views (Independent flag)
+            acc.views += stateViews;
+
+            // 2. Accumulated Status Logic (Funnel)
+            // If it's Published, it counts for Published + Accepted + Offered + Matched
+            if (name.includes('complete') || name.includes('publish')) {
+                acc.published += count;
+                acc.accepts += count;
+                acc.offers += count;
+                acc.matches += count;
+            }
+            // If it's Offered, it counts for Offered + Matched
+            else if (name.includes('offer')) {
+                acc.accepts += count;
+                acc.offers += count;
+                acc.matches += count;
+            }
+            // If it's Accepted, it counts for Accepted + Offered + Matched
+            else if (name.includes('accept')) {
+                acc.offers += count;
+                acc.matches += count;
+            }
+            // If it's just Matched, it only counts for Matched
+            else if (name.includes('match')) {
+                acc.matches += count;
+            }
+
+            return acc;
+        }, { matches: 0, views: 0, offers: 0, accepts: 0, published: 0 })
     }
 
     async getForEditPage(req, id) {
