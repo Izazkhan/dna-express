@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const deliverables = [
+    const states = [
       {
         name: "Matched",
         slug: "matched",
@@ -35,6 +35,6 @@ module.exports = {
     ];
     // Just to clear the old data
     await queryInterface.sequelize.query('TRUNCATE ad_campaign_states RESTART IDENTITY CASCADE;');
-    await queryInterface.bulkInsert('ad_campaign_states', deliverables, {});
+    await queryInterface.bulkInsert('ad_campaign_states', states, {});
   }
 };

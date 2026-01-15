@@ -1,13 +1,21 @@
 // services/TokenService.js
 import crypto from 'crypto';
 
+/**
+ * Service handling secure token encryption, decryption, and expiration validation.
+ */
 export default class TokenService {
     constructor() {
         this.algorithm = 'aes-256-cbc';
         this.encryptionKey = this.#loadAndValidateKey();
     }
 
-    // Private: Load key from env (base64) and validate
+    /**
+     * @private
+     * @description Loads and validates the encryption key from environment variables.
+     * @throws {Error} If APP_KEY is missing or invalid.
+     * @returns {Buffer}
+     */
     #loadAndValidateKey() {
         const keyString = process.env.APP_KEY;
         if (!keyString) {
@@ -23,8 +31,10 @@ export default class TokenService {
     }
 
     /**
-     * Encrypts a plain token string.
-     * Returns null if input is null/empty; else "iv_hex:encrypted_hex" for DB storage.
+     * @method encrypt
+     * @description Encrypts a plain text token using AES-256-CBC.
+     * @param {string} plainToken - The raw token string to encrypt.
+     * @returns {string|null} The formatted string "iv:encrypted" or null.
      */
     encrypt(plainToken) {
         if (!plainToken || plainToken.length === 0) return null;
@@ -39,8 +49,11 @@ export default class TokenService {
     }
 
     /**
-     * Decrypts a stored encrypted token.
-     * Returns plain token or throws on error (invalid format/tampered).
+     * @method decrypt
+     * @description Decrypts a stored token string.
+     * @param {string} encryptedToken - The "iv:encrypted" string from the database.
+     * @returns {string|null} The decrypted plain text token.
+     * @throws {Error} If the token format or IV length is invalid.
      */
     decrypt(encryptedToken) {
         console.log('Func call: decrypt', encryptedToken);
@@ -65,6 +78,12 @@ export default class TokenService {
         return decrypted;
     }
 
+    /**
+     * @method isExpired
+     * @description Checks if a given date has passed the current time.
+     * @param {Date|string} expiresAt - The expiration timestamp.
+     * @returns {boolean} True if the token is expired, false otherwise.
+     */
     isExpired(expiresAt) {
         return expiresAt && new Date(expiresAt) < new Date();
     }

@@ -16,7 +16,7 @@ module.exports = {
 
                 created_at TIMESTAMPTZ DEFAULT NOW(),
                 updated_at TIMESTAMPTZ DEFAULT NOW()
-            )
+            );
 
             CREATE INDEX IF NOT EXISTS idx_avg_followers_count ON ig_profile_average_insights(followers_count);
             CREATE INDEX IF NOT EXISTS idx_avg_engagement ON ig_profile_average_insights(engagement);

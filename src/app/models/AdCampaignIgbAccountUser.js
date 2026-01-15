@@ -1,6 +1,7 @@
 import { DataTypes, literal, Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
 import AdCampaignState from './AdCampaignState.js';
+import { StateIds } from '../../config/campaign-states.js';
 
 const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     id: {
@@ -57,24 +58,24 @@ const AdCampaignIgbAccountUser = sequelize.define('AdCampaignIgbAccountUser', {
     scopes: {
         withActiveState: {
             where: literal(`(
-                ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered') 
-                AND ad_campaign_state_id < (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                ad_campaign_state_id >= ${StateIds.offered}
+                AND ad_campaign_state_id < ${StateIds.completed}
             )`)
         },
         withAcceptedState: {
             where: literal(`(
-                ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'accepted') 
+                ad_campaign_state_id = ${StateIds.accepted}
             )`)
         },
         withRejectedState: {
             where: literal(`(
-                ad_campaign_state_id <= (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                ad_campaign_state_id <= ${StateIds.accepted}
                 AND rejected = true
             )`)
         },
         withCompletedState: {
             where: literal(`(
-                ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                ad_campaign_state_id = ${StateIds.completed}
             )`)
         },
     }

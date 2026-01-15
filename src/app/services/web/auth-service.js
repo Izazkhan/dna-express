@@ -9,6 +9,9 @@ import { Op } from 'sequelize';
 const { User, PasswordReset } = models;
 import { sendMail } from '../../../mail.js';
 
+/**
+ * Service handling user authentication, registration, token management, and password recovery logic.
+ */
 class AuthService {
     constructor() {
         this.JWT_EXPIRE = process.env.JWT_EXPIRE || '15m';
@@ -16,7 +19,12 @@ class AuthService {
         this.PASSWORD_RESET_EXPIRY = 5 * 60 * 1000; // 5 minutes
     }
 
-    // Generate access + refresh tokens
+    /**
+     * @private
+     * @description Generates a new pair of Access and Refresh JWTs for a user.
+     * @param {number} userId 
+     * @returns {{accessToken: string, refreshToken: string}}
+     */
     #generateTokens(userId) {
         const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
             expiresIn: this.JWT_EXPIRE,
@@ -27,12 +35,25 @@ class AuthService {
         return { accessToken, refreshToken };
     }
 
-    // Hash token for DB storage
+    /**
+     * @private
+     * @description Hashes a token string for secure database storage using bcrypt.
+     * @param {string} token 
+     * @returns {Promise<string>}
+     */
     async #hashToken(token) {
         return await bcrypt.hash(token, 10);
     }
 
-    // Register new user
+    /**
+     * @method register
+     * @description Registers a new user, hashes their password, and issues initial authentication tokens.
+     * @param {Object} params
+     * @param {string} params.email
+     * @param {string} params.password
+     * @param {string} params.name
+     * @returns {Promise<Object>} User data and token pair.
+     */
     async register({ email, password, name }) {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) throw new ApiError(400, 'User already exists');
@@ -52,7 +73,14 @@ class AuthService {
         };
     }
 
-    // Login user
+    /**
+     * @method login
+     * @description Validates user credentials and generates a new session with tokens.
+     * @param {Object} params
+     * @param {string} params.email
+     * @param {string} params.password
+     * @returns {Promise<Object>} Minimal user data and token pair.
+     */
     async login({ email, password }) {
         const user = await User.findOne({
             where: { email },
@@ -77,15 +105,24 @@ class AuthService {
         };
     }
 
-    // Send welcome email
+    /**
+     * @private
+     * @description Sends a welcome email notification to a newly registered user.
+     * @param {string} email 
+     * @param {string} name 
+     */
     async #sendWelcomeEmail(email, name) {
-        // You can extend this to use a WelcomeMail class
         const subject = 'Welcome to Our Platform!';
         const html = `<h1>Hello ${name}!</h1><p>Welcome aboard.</p>`;
         await sendMail(email, subject, html);
     }
 
-    // Forgot password - send reset link
+    /**
+     * @method forgotPassword
+     * @description Generates a password reset token, stores its hash, and emails the reset link.
+     * @param {string} email 
+     * @returns {Promise<{link: string}>}
+     */
     async forgotPassword(email) {
         const user = await User.findOne({ where: { email } });
         if (!user) throw new ApiError(404, 'User not found');
@@ -107,7 +144,15 @@ class AuthService {
         return { link };
     }
 
-    // Reset password using token
+    /**
+     * @method resetPassword
+     * @description Verifies a reset token and updates the user's password.
+     * @param {Object} params
+     * @param {string} params.token - The raw reset token.
+     * @param {string} params.email
+     * @param {string} params.password - The new password.
+     * @returns {Promise<{message: string}>}
+     */
     async resetPassword({ token, email, password }) {
         const user = await User.findOne({ where: { email } });
         if (!user) throw new ApiError(404, 'User not found');
@@ -131,7 +176,12 @@ class AuthService {
         return { message: 'Password reset successful' };
     }
 
-    // Refresh access token
+    /**
+     * @method refreshToken
+     * @description Validates a refresh token and rotates it with a new access/refresh pair.
+     * @param {string} refreshToken 
+     * @returns {Promise<{accessToken: string, refreshToken: string}>}
+     */
     async refreshToken(refreshToken) {
         let decoded;
         try {
@@ -160,5 +210,4 @@ class AuthService {
     }
 }
 
-// Export singleton
 export default new AuthService();

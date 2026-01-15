@@ -12,12 +12,18 @@ const {
     IgLatestDemographicInsights
 } = models;
 
+/**
+ * Service responsible for the automated matching logic between Ad Campaigns and Influencer accounts.
+ * It filters influencers based on location, engagement metrics, and audience demographics.
+ */
 class MatcherService {
     constructor() { }
 
     /**
-     * Entry point for the Worker.
-     * Matches a single campaign by ID.
+     * @method processCampaignById
+     * @description Entry point for the background worker to trigger the matching process for a specific campaign.
+     * @param {number|string} campaignId - The ID of the campaign to process.
+     * @returns {Promise<number>} The number of new matches found.
      */
     async processCampaignById(campaignId) {
         console.log("[Matcher] Starting matching for Campaign ID:", campaignId);
@@ -47,8 +53,11 @@ class MatcherService {
     }
 
     /**
-     * Matches a single campaign to eligible IGB accounts
-     * @param {AdCampaign} campaign
+     * @method matchCampaign
+     * @description Executes a complex SQL query to find IGB accounts that meet the campaign's criteria.
+     * Checks location (City/State), Engagement rates, Followers, and Gender distribution.
+     * @param {AdCampaign} campaign - The campaign instance with its relations.
+     * @returns {Promise<number>} The count of successfully created matches.
      */
     async matchCampaign(campaign) {
 
@@ -136,7 +145,7 @@ class MatcherService {
                 state_id: campaign?.locations?.[0]?.data_state_id || null,
                 country_id: campaign?.locations?.[0]?.data_country_id || null
             },
-            type: 'SELECT'
+            type: sequelize.QueryTypes.SELECT
         });
 
         let newMatches = eligibleAccounts.map(match => ({

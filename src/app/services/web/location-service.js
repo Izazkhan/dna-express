@@ -1,6 +1,19 @@
 import { sequelize } from "../../../config/database.js";
 
+/**
+ * Service handling geographic location searches, specifically for cities and states.
+ */
 export class LocationService {
+    /**
+     * @method searchCities
+     * @description Performs a unified search across states and cities based on a prefix query.
+     * Results are ordered by type (states first, then cities) and can be filtered by country.
+     * @param {string} query - The search term or prefix.
+     * @param {Object} options - Search constraints.
+     * @param {number} [options.countryId] - Filter results by a specific country ID.
+     * @param {number} [options.limit=10] - The maximum number of results to return.
+     * @returns {Promise<Array<Object>>} Normalized array of location objects containing display names and IDs.
+     */
     static async searchCities(query, options = {}) {
         const { countryId, limit = 10 } = options;
 

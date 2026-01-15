@@ -5,10 +5,20 @@ import TokenService from "./token-service.js";
 
 const { User } = models;
 
+/**
+ * Service handling the business logic for IGB account synchronization and creation.
+ */
 class IgbAccountService {
     constructor() {
     }
 
+    /**
+     * @method create
+     * @description Creates or updates an IGB account record linked to a Facebook user ID.
+     * @param {Object} data - The account data to be saved or updated.
+     * @param {string|number} fb_user_id - The Facebook user ID used to associate the account with a system user.
+     * @returns {Promise<IgbAccount>} The persisted IGB account instance with user details.
+     */
     async create(data, fb_user_id) {
         let user = await User.findOne({ where: { fb_user_id } });
         if (!user) {

@@ -4,8 +4,18 @@ import { ApiError } from '../../../utils/api-response.js';
 import bcrypt from 'bcryptjs';
 
 const { User } = models;
+
+/**
+ * Service handling user data management, profile updates, and secure account deletion.
+ */
 class UserService {
-    // [Api] Get user by ID
+    /**
+     * @method getUserById
+     * @description Retrieves a user profile by its ID using the 'advertiser' scope.
+     * @param {number|string} id - The primary key of the user.
+     * @returns {Promise<User>} The user instance.
+     * @throws {ApiError} If the user is not found.
+     */
     async getUserById(id) {
         const user = await User.scope('advertiser').findByPk(id);
         if (!user) {
@@ -14,7 +24,13 @@ class UserService {
         return user;
     }
 
-    // [Api] Get user by email
+    /**
+     * @method getUserByEmail
+     * @description Finds a single user record based on their email address.
+     * @param {string} email - The email to search for.
+     * @returns {Promise<User>} The user instance.
+     * @throws {ApiError} If the user is not found.
+     */
     async getUserByEmail(email) {
         const user = await User.findOne({ where: { email } });
         if (!user) {
@@ -23,7 +39,14 @@ class UserService {
         return user;
     }
 
-    // [Api] Update user (with optional password hash)
+    /**
+     * @method updateUser
+     * @description Updates user information, including secure password hashing if a new password is provided.
+     * @param {number|string} id - The ID of the user to update.
+     * @param {Object} updateData - The data object containing fields to update.
+     * @returns {Promise<User>} The updated and reloaded user instance.
+     * @throws {ApiError} If the user is not found.
+     */
     async updateUser(id, updateData) {
         const user = await User.findByPk(id);
         if (!user) {
@@ -42,7 +65,13 @@ class UserService {
         return user.reload(); // Return fresh data
     }
 
-    // [Api] Delete user
+    /**
+     * @method deleteUser
+     * @description Removes a user record from the database.
+     * @param {number|string} id - The ID of the user to delete.
+     * @returns {Promise<boolean>} Returns true on successful deletion.
+     * @throws {ApiError} If the user is not found.
+     */
     async deleteUser(id) {
         const user = await User.findByPk(id);
         if (!user) {

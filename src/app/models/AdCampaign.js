@@ -1,7 +1,7 @@
 // models/AdCampaign.js
 import { DataTypes, literal, Op } from 'sequelize';
 import { sequelize } from '../../config/database.js';
-import User from './User.js';
+import { StateIds } from '../../config/campaign-states.js';
 
 const AdCampaign = sequelize.define('AdCampaign', {
     id: {
@@ -188,8 +188,8 @@ const AdCampaign = sequelize.define('AdCampaign', {
                         SELECT 1
                         FROM ad_campaign_igb_account_user p
                         WHERE p.ad_campaign_id = "AdCampaign"."id"
-                        AND p.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'offered')
-                        AND p.ad_campaign_state_id < (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                        AND p.ad_campaign_state_id >= ${StateIds.offered}
+                        AND p.ad_campaign_state_id < ${StateIds.completed}
                         LIMIT 1
                     )
                 `)
@@ -202,7 +202,7 @@ const AdCampaign = sequelize.define('AdCampaign', {
                         SELECT 1
                         FROM ad_campaign_igb_account_user p
                         WHERE p.ad_campaign_id = "AdCampaign"."id"
-                        AND p.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                        AND p.ad_campaign_state_id = ${StateIds.accepted}
                         LIMIT 1
                     )
                 `)
@@ -216,7 +216,7 @@ const AdCampaign = sequelize.define('AdCampaign', {
                         FROM ad_campaign_igb_account_user p
                         WHERE p.ad_campaign_id = "AdCampaign"."id"
                         AND p.rejected = true
-                        AND p.ad_campaign_state_id <= (SELECT id FROM ad_campaign_states WHERE slug = 'accepted')
+                        AND p.ad_campaign_state_id <= ${StateIds.accepted}
                         LIMIT 1
                     )
                 `)
@@ -229,7 +229,7 @@ const AdCampaign = sequelize.define('AdCampaign', {
                         SELECT 1
                         FROM ad_campaign_igb_account_user p
                         WHERE p.ad_campaign_id = "AdCampaign"."id"
-                        AND p.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'completed')
+                        AND p.ad_campaign_state_id = ${StateIds.completed}
                         LIMIT 1
                     )
                 `)

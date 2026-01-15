@@ -8,11 +8,22 @@ import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
 import AdCampaignDemographic from "../../models/AdCampaignDemographic.js";
 import AdCampaign from "../../models/AdCampaign.js";
 import MatcherQueue from "../../../queues/matcher/matcher-queue.js";
+import { StateIds } from "../../../config/campaign-states.js";
 
+/**
+ * Service handling the core business logic for Ad Campaigns, including creation,
+ * updates, insights calculation, and response transformation.
+ */
 class AdCampaignService {
 
     constructor() { }
 
+    /**
+     * @method create
+     * @description Creates a new ad campaign, transforms incoming data, and triggers the matcher queue.
+     * @param {Object} params - Object containing body and user.
+     * @returns {Promise<AdCampaign>}
+     */
     async create({ body: data, user: authUser }) {
         data.user_id = authUser.id;
         const transformed = this.transformRequestData(data);
@@ -28,6 +39,12 @@ class AdCampaignService {
         return campaign;
     }
 
+    /**
+     * @method update
+     * @description Updates campaign details, demographics, and locations within a transaction.
+     * @param {Object} params - Object containing route params, body, and user context.
+     * @returns {Promise<Object>} The transformed updated campaign.
+     */
     async update({ params, body: data, user: authUser }) {
         const campaignId = params.id;
 
@@ -103,6 +120,12 @@ class AdCampaignService {
         });
     }
 
+    /**
+     * @method transformRequestData
+     * @description Normalizes incoming request data for demographics and location mapping.
+     * @param {Object} data
+     * @returns {Object}
+     */
     transformRequestData(data) {
         let { demographics, locations, ...rest } = data;
 
@@ -137,6 +160,13 @@ class AdCampaignService {
         };
     }
 
+    /**
+     * @method getWithDetail
+     * @description Fetches campaign by ID with full relations and performance insights.
+     * @param {Object} req
+     * @param {number} id
+     * @returns {Promise<Object|null>}
+     */
     async getWithDetail(req, id) {
         let campaign = await AdCampaign.findByPk(id, {
             where: {
@@ -166,6 +196,12 @@ class AdCampaignService {
         }
     }
 
+    /**
+     * @method getCampaignInsights
+     * @description Aggregates campaign performance data into a conversion funnel (matches, views, offers, etc.).
+     * @param {number} id - Campaign ID.
+     * @returns {Promise<Object>}
+     */
     async getCampaignInsights(id) {
         const [matchCounts] = await sequelize.query(`
             SELECT COUNT(aiu.id) as count, aiu.ad_campaign_state_id, 
@@ -173,9 +209,9 @@ class AdCampaignService {
             SUM(
                 CASE
                     WHEN (
-                        aiu.ad_campaign_state_id = (SELECT id FROM ad_campaign_states WHERE slug = 'matched') 
+                        aiu.ad_campaign_state_id = ${StateIds.matched} 
                         AND aiu.viewed = true
-                    ) OR (aiu.ad_campaign_state_id > (SELECT id FROM ad_campaign_states WHERE slug = 'matched'))
+                    ) OR (aiu.ad_campaign_state_id > ${StateIds.matched})
                     THEN 1
                     ELSE 0
                 END
@@ -186,8 +222,7 @@ class AdCampaignService {
             GROUP BY aiu.ad_campaign_state_id, acs.name
         `, {
             replacements: {
-                ad_campaign_id: id
-            }
+                ad_campaign_id: id            }
         });
 
         return matchCounts.reduce((acc, curr) => {
@@ -212,7 +247,7 @@ class AdCampaignService {
                 acc.offers += count;
                 acc.matches += count;
             }
-            // If it's Accepted, it counts for Accepted + Offered + Matched
+            // If it's Accepted, it counts for  Offered + Matched
             else if (name.includes('accept')) {
                 acc.offers += count;
                 acc.matches += count;
@@ -226,6 +261,13 @@ class AdCampaignService {
         }, { matches: 0, views: 0, offers: 0, accepts: 0, published: 0 })
     }
 
+    /**
+     * @method getForEditPage
+     * @description Fetches a campaign and transforms it for use in front-end edit forms.
+     * @param {Object} req
+     * @param {number} id
+     * @returns {Promise<Object|null>}
+     */
     async getForEditPage(req, id) {
         let campaign = await AdCampaign.findByPk(id, {
             where: {
@@ -256,6 +298,13 @@ class AdCampaignService {
         return this.transformCampaignResponseData(campaign);
     }
 
+    /**
+     * @method get
+     * @description Simple fetch for a single campaign by ID.
+     * @param {Object} req
+     * @param {number} id
+     * @returns {Promise<AdCampaign|null>}
+     */
     async get(req, id) {
         let campaign = await AdCampaign.findByPk(id, {
             where: {
@@ -269,6 +318,12 @@ class AdCampaignService {
         return campaign;
     }
 
+    /**
+     * @method getAllWithSimplePagination
+     * @description Retrieves a paginated list of campaigns for the current user.
+     * @param {Object} req
+     * @returns {Promise<Object>}
+     */
     async getAllWithSimplePagination(req) {
         const { pagesize, offset } = paginate(req.query);
         let campaigns = await AdCampaign.findAll({
@@ -293,6 +348,13 @@ class AdCampaignService {
         }
     }
 
+    /**
+     * @method fetchCampaignsWithProposalScope
+     * @description Fetches campaigns filtered by specific proposal scopes (active, accepted, etc.).
+     * @param {Object} req
+     * @param {string} proposalScope - The Sequelize scope to apply.
+     * @returns {Promise<Object>}
+     */
     async fetchCampaignsWithProposalScope(req, proposalScope) {
         const { pagesize, offset, page } = paginate(req.query);
         const whereConditions = {
@@ -301,7 +363,7 @@ class AdCampaignService {
         if (req.query.search) {
             whereConditions.name = { [Op.iLike]: `${req.query.search}%` };
         }
-
+        console.log(proposalScope);
         let { rows, count } = await AdCampaign
             .scope(['openCampaigns', proposalScope])
             .findAndCountAll({
@@ -322,10 +384,22 @@ class AdCampaignService {
         }
     }
 
+    /**
+     * @method transformCampaignsResponseData
+     * @description Batch transformation of campaign models into plain JSON objects.
+     * @param {Array<AdCampaign>} campaigns
+     * @returns {Array<Object>}
+     */
     transformCampaignsResponseData(campaigns) {
         return campaigns.map(campaign => this.transformCampaignResponseData(campaign));
     }
 
+    /**
+     * @method transformCampaignResponseData
+     * @description Cleans and formats campaign model data for API responses.
+     * @param {AdCampaign} campaign
+     * @returns {Object}
+     */
     transformCampaignResponseData(campaign) {
         const campaignData = campaign.toJSON();
 
@@ -357,6 +431,12 @@ class AdCampaignService {
         return campaignData;
     }
 
+    /**
+     * @method publishCampaign
+     * @description Sets the published status of a campaign to true.
+     * @param {number} campaignId
+     * @returns {Promise<boolean|null>}
+     */
     async publishCampaign(campaignId) {
         let campaign = await AdCampaign.findByPk(campaignId);
         if (!campaign) {

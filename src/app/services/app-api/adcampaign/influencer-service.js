@@ -4,7 +4,16 @@ import models from "../../../models/index.js";
 import { sequelize } from "../../../../config/database.js";
 const { IgbAccount, AdCampaignState, AdCampaignIgbAccountUser, AdCampaign } = models;
 
+/**
+ * Service handling the business logic for influencer campaign interactions.
+ */
 class InfluencerService {
+    /**
+     * @method acceptCampaign
+     * @description Processes a campaign acceptance by an influencer and updates the campaign state.
+     * @param {Object} req - The request object containing user and parameter data.
+     * @returns {Promise<Object>} The updated match record.
+     */
     async acceptCampaign(req) {
         let account = await IgbAccount.findOne({
             where: {
@@ -47,6 +56,12 @@ class InfluencerService {
         };
     }
     
+    /**
+     * @method rejectCampaign
+     * @description Processes a campaign rejection and resets the state to matched.
+     * @param {Object} req - The request object containing user and parameter data.
+     * @returns {Promise<Object>} The updated match record.
+     */
     async rejectCampaign(req) {
         let account = await IgbAccount.findOne({
             where: {
@@ -82,6 +97,12 @@ class InfluencerService {
         };
     }
 
+    /**
+     * @method feed
+     * @description Retrieves the campaign feed for an influencer and marks unviewed matches as viewed.
+     * @param {Object} req - The request object containing user and parameter data.
+     * @returns {Promise<Array>} List of campaigns with match details.
+     */
     async feed(req) {
         let account = await IgbAccount.findOne({
             where: {

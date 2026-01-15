@@ -5,8 +5,18 @@ import AdCampaignState from "../../models/AdCampaignState.js";
 import IgbAccount from "../../models/IgbAccount.js";
 import IgProfileAverageInsights from "../../models/IgProfileAverageInsights.js";
 
+/**
+ * Service handling business logic for influencer agreements and campaign contracts.
+ */
 class AgreementService {
 
+    /**
+     * @method index
+     * @description Retrieves a paginated list of influencer agreements filtered by status (active or completed).
+     * @param {import('express').Request} req - Request object containing user context.
+     * @param {'active'|'completed'} type - The category of agreements to fetch.
+     * @returns {Promise<{agreements: IgbAccount[], total: number}>}
+     */
     index = async (req, type = 'active') => {
         const isCompleted = type === 'completed';
         const offeredId = await AdCampaignState.offeredId();

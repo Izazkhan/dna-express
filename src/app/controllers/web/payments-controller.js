@@ -4,11 +4,22 @@ import TransactionService from "../../services/web/transaction-service.js";
 import asyncHandler from "../../../utils/async-handler.js";
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+/**
+ * Controller handling Stripe payment processing, verification, and webhook fulfillment.
+ */
 class PaymentController {
     constructor() {
         this.adCampaignService = AdCampaignService;
         this.transactionService = TransactionService;
     }
+
+    /**
+     * @method createPaymentIntent
+     * @description Initiates a Stripe Payment Intent with specified amount and metadata.
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @returns {Promise<import('express').Response>}
+     */
     createPaymentIntent = asyncHandler(async (req, res) => {
         const { amount, currency, metadata } = req.body;
         const paymentIntent = await stripe.paymentIntents.create({
@@ -26,6 +37,13 @@ class PaymentController {
         });
     })
 
+    /**
+     * @method verifyPayment
+     * @description Retrieves and verifies the status of a Payment Intent by ID.
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @returns {Promise<import('express').Response>}
+     */
     verifyPayment = asyncHandler(async (req, res) => {
         const paymentIntentId = req.params.id;
 
@@ -48,6 +66,13 @@ class PaymentController {
         }
     })
 
+    /**
+     * @method handleStripeWebhook
+     * @description Processes Stripe webhook events to fulfill transactions and publish campaigns.
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @returns {Promise<import('express').Response>}
+     */
     handleStripeWebhook = asyncHandler(async (req, res) => {
         let event;
         try {

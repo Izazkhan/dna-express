@@ -1,4 +1,5 @@
 // config.js
+// This is required for running Sequelize cli commands
 import dotenv from 'dotenv';
 dotenv.config();
 

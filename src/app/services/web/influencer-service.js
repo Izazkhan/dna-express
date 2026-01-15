@@ -5,9 +5,18 @@ import { paginate } from "../../../utils/pagination.js";
 import { sequelize } from "../../../config/database.js";
 import IgPost from "../../models/IgPost.js";
 import AdCampaignIgbAccountUser from "../../models/AdCampaignIgbAccountUser.js";
+import { StateIds } from "../../../config/campaign-states.js";
 
+/**
+ * Service handling business logic for influencer discovery and media management within the web portal.
+ */
 export class InfluencerService {
-    /* List influencers associated with the user's ad campaigns */
+    /**
+     * @method list
+     * @description Retrieves a paginated list of influencers matched with the authenticated user's campaigns.
+     * @param {import('express').Request} req - Request object containing user context and query filters.
+     * @returns {Promise<Object>} Object containing IGB accounts and pagination metadata.
+     */
     async list(req) {
         const { page, pagesize, offset } = paginate(req.query);
         const userId = Number(req.user.id);
@@ -19,7 +28,7 @@ export class InfluencerService {
                 EXISTS (
                     SELECT 1 FROM ad_campaign_igb_account_user AS matches
                     WHERE matches.igb_account_id = "IgbAccount".id
-                    AND matches.ad_campaign_state_id >= (SELECT id FROM ad_campaign_states WHERE slug = 'matched')
+                    AND matches.ad_campaign_state_id >= ${StateIds.matched}
                     AND EXISTS (
                         SELECT 1 FROM ad_campaigns AS ac
                         WHERE ac.id = matches.ad_campaign_id
@@ -68,6 +77,13 @@ export class InfluencerService {
         };
     }
 
+    /**
+     * @method media
+     * @description Retrieves paginated Instagram posts for a specific influencer account.
+     * @param {import('express').Request} req - Request object containing pagination query.
+     * @param {number|string} igbAccountId - The internal ID of the IGB account.
+     * @returns {Promise<Object|string>} Paginated posts or an error message if no match is found.
+     */
     async media(req, igbAccountId) {
         const { page, pagesize, offset } = paginate(req.query);
         let match = await AdCampaignIgbAccountUser.findOne({
